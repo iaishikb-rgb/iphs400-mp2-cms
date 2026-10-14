@@ -21,6 +21,12 @@ admin console never goes on the public internet.
 - `site/` is generated. Never edit it by hand.
 - Only published content reaches `site/`. Drafts never leave the database.
 
+## Course rules
+
+- The project glossary is CONTEXT.md (never GLOSSARY.md). /grill-with-docs and every other skill must read and write CONTEXT.md.
+- Required workflow for this course: /grill-with-docs -> /to-spec -> /to-tickets (7-9 tickets) -> /implement one ticket per fresh session -> /code-review. Do not use /implement-spec or /pr.
+- Work directly on main; each ticket closes with a commit starting "T0N:" and ending "Closes #N".
+
 ## How to work with me
 
 - One ticket per session. Read the ticket issue, the spec issue, and `CONTEXT.md`
