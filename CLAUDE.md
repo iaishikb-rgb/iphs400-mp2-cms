@@ -37,6 +37,20 @@ admin console never goes on the public internet.
 - Ask before adding a dependency. The stack in `pyproject.toml` is fixed for this
   project.
 
+## Agent skills
+
+### Issue tracker
+
+Work is tracked in GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Issues use five canonical labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context glossary and ADRs. See `docs/agents/domain.md`.
+
 <!-- ai-swe-setup:long-sessions v1 — managed block: bin/repo-standardize in ~/code/ai-swe-setup replaces it; edit the source there -->
 ## Long sessions (shared standard)
 - Session handoffs are dated, write-once files in `docs/handoffs/`, named `<YYYY-MM-DD_HHMM>_<slug>-claude.md`: `/handoff <slug>` writes one, `/handoff-load <slug>` loads one by name. `LATEST*.md` and `INDEX.md` are retired stubs (2026-10-06): never read, write or import them. Codex keeps its own records in `docs/handoffs/codex/`.
