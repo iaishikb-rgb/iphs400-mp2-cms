@@ -1,3 +1,21 @@
-# Field notes
+# CMS field notes: WordPress Playground
 
-(Part 2 of the manual: at least five things you noticed inside WordPress Playground, in your own words.)
+**Tuesday, October 13, 2026**
+
+I explored WordPress Playground with the Kenyon College Finance Club in mind. I wanted to understand how the system handles publishing and user permissions, but also whether it would be practical for students who are responsible for organizing the club alongside their other commitments. Since our three presidents organize the club and most communication happens through email, the website would need to make information easy to maintain and find.
+
+1. **Drafts are not visible on the public site.** I created a sample post titled "Fall Stock Pitch Night" and saved it as a draft. When I opened the public site in another tab, the post did not appear. I could only view it through the Preview button while logged in. This is useful for preparing material before it is ready to share, particularly stock pitches that need to be reviewed. However, it also makes a clear distinction between saving and publishing necessary: an officer could save an announcement and assume members can already see it. The title was just for testing; our actual stock pitch competition takes place in the spring.
+
+2. **Publishing requires an additional confirmation.** Clicking Publish first opened a panel asking me to confirm that the post was ready. Although this adds another step, I can see why it is useful. For our club, accidentally publishing an unfinished pitch could affect how alumni perceive the work we do. The confirmation gives the person posting a chance to check the material before it becomes public.
+
+3. **Pages and posts serve different purposes.** In my test, the About page appeared in the site's menu, while the post appeared in the blog feed. This helped clarify how we could organize the club's website. Pages would hold information that remains relevant over time, such as About, Leadership, and the Analyst Program. Posts would hold dated material, including meeting announcements, event recaps, and stock pitch writeups. Our current Wix site relies on static pages, which makes it harder to distinguish current activity from general club information.
+
+4. **The URL slug is generated automatically, but its settings are easy to miss.** WordPress created the slug "fall-stock-pitch-night" from my post's title. I only found the setting after opening the post settings sidebar. I do not think most officers would look for it unless they needed to change the URL. Automatic generation would therefore be helpful, and for our own system I would want shared links to remain reliable even if someone later edits a title.
+
+5. **Restrictions are enforced beyond the navigation menu.** I created an Editor account and logged in with it. The Users menu was absent from the sidebar. When I entered /wp-admin/users.php directly in the address bar, WordPress displayed, "Sorry, you are not allowed to list users." This showed that the restriction was enforced by the system itself. For our website, account management should be limited to the three presidents, and those limits should still apply if someone tries to reach the page directly.
+
+6. **The Editor role allows more control than our officers would need.** While logged in as an Editor, I could edit and move other people's pages to the trash, including the About page. This would be a concern for the club because officers contributing announcements or writeups should not also be able to delete the Leadership or Analyst Program pages. WordPress's default Editor role therefore does not match the permissions we want. Our system would need to restrict access to these pages more specifically.
+
+7. **The post status filters make unfinished work easy to find.** The All Posts screen displayed links for All, Published, and Drafts, with a count beside each. Clicking Drafts showed the posts that had not yet been published. This would be useful when the presidents are reviewing announcements or stock pitch writeups. It makes it easier to see what still needs attention without opening every post individually.
+
+8. **The block editor offers more options than our everyday updates require.** Each paragraph is treated as a separate block, and the add menu includes many different types of content. These options may be useful for a more elaborate website, but most club updates would only need a title, text, and a few links. For announcements about our meetings every other week in Oden 110, or links to resume review forms, a simpler editor would likely be easier to use. Plain Markdown could be sufficient for much of this work.
