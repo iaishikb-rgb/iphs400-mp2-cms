@@ -76,3 +76,52 @@ def authenticate(conn: sqlite3.Connection, email: str, password: str) -> User | 
     if row is None or not row["active"]:
         return None
     return _row_to_user(row)
+
+
+ROLES = ("admin", "editor")
+EMAIL_DOMAIN = "@kenyon.edu"
+MIN_PASSWORD_LENGTH = 8
+
+
+class GuardRailError(ValueError):
+    """A change the rules forbid; the message is shown to the President."""
+
+
+def list_users(conn: sqlite3.Connection) -> list[User]:
+    rows = conn.execute("SELECT * FROM users ORDER BY active DESC, email").fetchall()
+    return [_row_to_user(r) for r in rows]
+
+
+def _active_presidents(conn: sqlite3.Connection) -> int:
+    return conn.execute(
+        "SELECT COUNT(*) FROM users WHERE role = 'admin' AND active = 1").fetchone()[0]
+
+
+def _keeps_a_president(conn: sqlite3.Connection, target: User) -> bool:
+    """False when `target` is the last active President."""
+    return not (target.role == "admin" and target.active and _active_presidents(conn) <= 1)
+
+
+def set_role(conn: sqlite3.Connection, user_id: int, role: str, acting_id: int) -> None:
+    target = get_user(conn, user_id)
+    if target is None or role not in ROLES:
+        raise GuardRailError("Unknown User or role")
+    if role != target.role and user_id == acting_id:
+        raise GuardRailError("You cannot change your own role")
+    if role != "admin" and not _keeps_a_president(conn, target):
+        raise GuardRailError("The last active President cannot be demoted")
+    with conn:
+        conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+
+
+def set_active(conn: sqlite3.Connection, user_id: int, active: bool, acting_id: int) -> None:
+    target = get_user(conn, user_id)
+    if target is None:
+        raise GuardRailError("Unknown User")
+    if not active:
+        if user_id == acting_id:
+            raise GuardRailError("You cannot deactivate yourself")
+        if not _keeps_a_president(conn, target):
+            raise GuardRailError("The last active President cannot be deactivated")
+    with conn:
+        conn.execute("UPDATE users SET active = ? WHERE id = ?", (int(active), user_id))

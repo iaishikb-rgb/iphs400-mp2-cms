@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Users</h1>
+  <p><a href="/admin">Dashboard</a></p>
+  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+  <table>
+    <thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td>{{ u.email }}</td>
+        <td>
+          <form method="post" action="/admin/users/{{ u.id }}/role">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="role" aria-label="Role for {{ u.email }}">
+              {% for r in roles %}<option value="{{ r }}"{% if r == u.role %} selected{% endif %}>{{ 'Admin' if r == 'admin' else 'Editor' }}</option>{% endfor %}
+            </select>
+            <button type="submit">Change role</button>
+          </form>
+        </td>
+        <td>{{ 'Active' if u.active else 'Deactivated' }}</td>
+        <td>
+          <form method="post" action="/admin/users/{{ u.id }}/{{ 'deactivate' if u.active else 'reactivate' }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">{{ 'Deactivate' if u.active else 'Reactivate' }}</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <h2>New User</h2>
+  <form method="post" action="/admin/users">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Kenyon email <input type="email" name="email" value="{{ form_email }}" required></label>
+    <label>Role
+      <select name="role">
+        {% for r in roles %}<option value="{{ r }}"{% if r == form_role %} selected{% endif %}>{{ 'Admin' if r == 'admin' else 'Editor' }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>First password <input type="password" name="password" autocomplete="new-password" required></label>
+    <button type="submit">Create User</button>
+  </form>
+{% endblock %}
