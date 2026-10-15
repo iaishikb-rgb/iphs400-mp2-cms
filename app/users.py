@@ -40,6 +40,13 @@ def get_user(conn: sqlite3.Connection, user_id: int) -> User | None:
     return _row_to_user(row) if row else None
 
 
+def count_by_active(conn: sqlite3.Connection) -> tuple[int, int]:
+    """(active, Deactivated) User counts."""
+    row = conn.execute(
+        "SELECT COALESCE(SUM(active), 0) AS a, COUNT(*) AS n FROM users").fetchone()
+    return row["a"], row["n"] - row["a"]
+
+
 def email_exists(conn: sqlite3.Connection, email: str) -> bool:
     return conn.execute(
         "SELECT 1 FROM users WHERE email = ?", (normalize_email(email),)

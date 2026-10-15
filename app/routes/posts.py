@@ -1,7 +1,7 @@
 """Console routes for Posts: list, create, edit, preview, delete."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 
 from app import auth, db, posts
@@ -36,12 +36,28 @@ def _editor_page(request, user, post, title, body, error=None, status_code=200):
     )
 
 
+STATUS_FILTERS = {"all": None, "published": posts.PUBLISHED, "draft": posts.DRAFT}
+TYPE_FILTERS = ("all", "post", "page")
+
+
 @router.get("")
-def post_list(request: Request, user=Depends(auth.require_user), conn=Depends(db.get_db)):
+def post_list(request: Request, status: str = "all", kind: str = Query("all", alias="type"),
+              user=Depends(auth.require_user), conn=Depends(db.get_db)):
+    """Content list. Unknown filter values fall back to All."""
+    status = status if status in STATUS_FILTERS else "all"
+    kind = kind if kind in TYPE_FILTERS else "all"
     own_only = None if user.role == "admin" else user.id
+    # Pages arrive in T05; until then the Page filter shows an empty list.
+    shows_posts = kind != "page"
+    counts = posts.count_by_status(conn, own_only) if shows_posts else {}
+    shown = posts.list_posts(conn, own_only, STATUS_FILTERS[status]) if shows_posts else []
+    published, drafts = counts.get(posts.PUBLISHED, 0), counts.get(posts.DRAFT, 0)
+    status_links = [("all", "All", published + drafts), ("published", "Published", published),
+                    ("draft", "Draft", drafts)]
     return templates.TemplateResponse(
         request, "admin/post_list.html",
-        {"title": "Posts", "user": user, "posts": posts.list_posts(conn, own_only)},
+        {"title": "Content list", "user": user, "posts": shown, "status": status, "type": kind,
+         "status_links": status_links, "type_links": TYPE_FILTERS if user.role == "admin" else ()},
     )
 
 

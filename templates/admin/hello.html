@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
   <h1>Hello admin</h1>
+  <h2>Dashboard</h2>
   <p>Signed in as {{ user.email }} ({{ user.role }}).</p>
-  <p><a href="/admin/posts/new">New Post</a> · <a href="/admin/posts">Posts</a></p>
+  <p><a href="/admin/posts/new">New Post</a> · <a href="/admin/posts">Content list</a></p>
+  <ul>
+    <li>Drafts: {{ drafts }}</li>
+    <li>Published: {{ published }}</li>
+    {% if active_users is not none %}
+    <li>Active Users: {{ active_users }}</li>
+    <li>Deactivated Users: {{ deactivated_users }}</li>
+    {% endif %}
+  </ul>
   <form method="post" action="/logout">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit">Sign out</button>

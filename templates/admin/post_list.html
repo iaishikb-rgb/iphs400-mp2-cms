@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Posts</h1>
+  <h1>Content list</h1>
   <p><a href="/admin/posts/new">New Post</a> · <a href="/admin">Dashboard</a></p>
+  <nav aria-label="Status">
+    {% for key, label, n in status_links %}
+    <a href="/admin/posts?status={{ key }}&amp;type={{ type }}">{{ label }} ({{ n }})</a>{% if not loop.last %} · {% endif %}
+    {% endfor %}
+  </nav>
+  <nav aria-label="Type">
+    {% for key in type_links %}
+    <a href="/admin/posts?status={{ status }}&amp;type={{ key }}">{{ key | capitalize }}</a>{% if not loop.last %} · {% endif %}
+    {% endfor %}
+  </nav>
   {% if posts %}
   <ul>
     {% for post in posts %}
@@ -12,6 +22,6 @@
     {% endfor %}
   </ul>
   {% else %}
-  <p>No Posts yet.</p>
+  <p>Nothing here yet.</p>
   {% endif %}
 {% endblock %}

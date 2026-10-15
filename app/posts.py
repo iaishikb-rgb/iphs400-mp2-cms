@@ -63,13 +63,29 @@ def get_post(conn: sqlite3.Connection, post_id: int) -> Post | None:
     return _row_to_post(row) if row else None
 
 
-def list_posts(conn: sqlite3.Connection, author_id: int | None = None) -> list[Post]:
-    """Newest first. author_id limits the list to one User's Posts."""
-    sql, args = _SELECT, ()
+def list_posts(conn: sqlite3.Connection, author_id: int | None = None,
+               status: str | None = None) -> list[Post]:
+    """Newest first. author_id limits the list to one User's Posts, status to one status."""
+    clauses, args = [], []
     if author_id is not None:
-        sql, args = sql + " WHERE p.author_id = ?", (author_id,)
-    rows = conn.execute(sql + " ORDER BY p.created_at DESC, p.id DESC", args).fetchall()
+        clauses.append("p.author_id = ?")
+        args.append(author_id)
+    if status is not None:
+        clauses.append("p.status = ?")
+        args.append(status)
+    where = " WHERE " + " AND ".join(clauses) if clauses else ""
+    rows = conn.execute(_SELECT + where + " ORDER BY p.created_at DESC, p.id DESC",
+                        args).fetchall()
     return [_row_to_post(r) for r in rows]
+
+
+def count_by_status(conn: sqlite3.Connection, author_id: int | None = None) -> dict[str, int]:
+    """Posts per status (draft, published), optionally for one author."""
+    sql, args = "SELECT status, COUNT(*) AS n FROM posts", ()
+    if author_id is not None:
+        sql, args = sql + " WHERE author_id = ?", (author_id,)
+    found = {r["status"]: r["n"] for r in conn.execute(sql + " GROUP BY status", args)}
+    return {DRAFT: found.get(DRAFT, 0), PUBLISHED: found.get(PUBLISHED, 0)}
 
 
 def update_post(conn: sqlite3.Connection, post_id: int, title: str, body: str,
