@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Not allowed</h1>
+  <p role="alert">{{ detail }}.</p>
+  <p><a href="{{ url('/admin') }}">Back to the dashboard</a></p>
+{% endblock %}

@@ -3,7 +3,7 @@
   <h1>Hello admin</h1>
   <h2>Dashboard</h2>
   <p>Signed in as {{ user.email }} ({{ user.role }}).</p>
-  <p><a href="/admin/posts/new">New Post</a> · <a href="/admin/posts">Content list</a>{% if user.role == 'admin' %} · <a href="/admin/posts?type=page">Pages</a> · <a href="/admin/pages/new">New Page</a> · <a href="/admin/users">Users</a>{% endif %}</p>
+  <p><a href="{{ url('/admin/posts/new') }}">New Post</a> · <a href="{{ url('/admin/posts') }}">Content list</a>{% if user.role == 'admin' %} · <a href="{{ url('/admin/posts?type=page') }}">Pages</a> · <a href="{{ url('/admin/pages/new') }}">New Page</a> · <a href="{{ url('/admin/users') }}">Users</a>{% endif %}</p>
   {% if pending %}<p role="status"><strong>Pending changes:</strong> saved work is not Live until the next Publish run (<code>cms publish</code>).</p>{% endif %}
   <ul>
     <li>Drafts: {{ drafts }}</li>
@@ -13,7 +13,7 @@
     <li>Deactivated Users: {{ deactivated_users }}</li>
     {% endif %}
   </ul>
-  <form method="post" action="/logout">
+  <form method="post" action="{{ url('/logout') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit">Sign out</button>
   </form>

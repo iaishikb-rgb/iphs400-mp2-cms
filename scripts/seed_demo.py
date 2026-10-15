@@ -3,9 +3,8 @@
 
     uv run python scripts/seed_demo.py
 
-T01 creates the users. Later tickets extend this so it also creates:
-  - (done in T01) one admin and one editor, passwords read from the environment
-  - a few posts and pages, at least one draft and one published
+Creates one admin and one editor (passwords read from the environment), the club's
+Pages, and demo Kenyon Finance Club content: published Pages and Posts plus one Draft.
 
 The rubric expects this to run clean on a fresh clone with .env.example values
 (item E4), because the database itself is never committed.
@@ -37,7 +36,9 @@ def main() -> int:
     from app.pages import seed_pages
 
     print(f"Pages created: {', '.join(seed_pages(settings.DATABASE_PATH)) or 'none (already present)'}")
-    # TODO (later tickets): demo posts, one draft and one published.
+    from app.demo_content import seed_demo_content
+
+    print(f"Demo content: {', '.join(seed_demo_content(settings.DATABASE_PATH)) or 'none (already present)'}")
     return 0
 
 

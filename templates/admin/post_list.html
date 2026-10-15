@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
   <h1>Content list</h1>
-  <p><a href="/admin/posts/new">New Post</a> ·{% if user.role == 'admin' %} <a href="/admin/pages/new">New Page</a> ·{% endif %} <a href="/admin">Dashboard</a></p>
+  <p><a href="{{ url('/admin/posts/new') }}">New Post</a> ·{% if user.role == 'admin' %} <a href="{{ url('/admin/pages/new') }}">New Page</a> ·{% endif %} <a href="{{ url('/admin') }}">Dashboard</a></p>
   <nav aria-label="Status">
     {% for key, label, n in status_links %}
-    <a href="/admin/posts?status={{ key }}&amp;type={{ type }}">{{ label }} ({{ n }})</a>{% if not loop.last %} · {% endif %}
+    <a href="{{ url('/admin/posts?status=' ~ (key) ~ '&type=' ~ (type)) }}">{{ label }} ({{ n }})</a>{% if not loop.last %} · {% endif %}
     {% endfor %}
   </nav>
   <nav aria-label="Type">
     {% for key in type_links %}
-    <a href="/admin/posts?status={{ status }}&amp;type={{ key }}">{{ key | capitalize }}</a>{% if not loop.last %} · {% endif %}
+    <a href="{{ url('/admin/posts?status=' ~ (status) ~ '&type=' ~ (key)) }}">{{ key | capitalize }}</a>{% if not loop.last %} · {% endif %}
     {% endfor %}
   </nav>
   {% if items %}

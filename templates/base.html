@@ -4,10 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ title }}{% endblock %}</title>
-  <link rel="stylesheet" href="{{ css_path | default('style.css') }}">
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; line-height: 1.5; color: #222; }
+    header, main, footer { padding: .5rem 1rem; max-width: 70rem; margin: 0 auto; box-sizing: border-box; }
+    nav { display: flex; flex-wrap: wrap; gap: .25rem 1rem; align-items: center; padding: .5rem 0;
+          border-bottom: 1px solid #ccc; }
+    nav form { margin: 0 0 0 auto; }
+    input[type=text], input[type=email], input[type=password], input[type=number], textarea, select {
+      max-width: 100%; box-sizing: border-box; }
+    table { display: block; overflow-x: auto; max-width: 100%; }
+    pre, code { white-space: pre-wrap; overflow-wrap: anywhere; }
+  </style>
 </head>
 <body>
-  <header><a href="{{ home_path | default('index.html') }}">{{ title }}</a></header>
+  <header>
+    {% if user %}
+    <nav aria-label="Admin">
+      <strong>Club CMS</strong>
+      <a href="{{ url('/admin') }}">Dashboard</a>
+      <a href="{{ url('/admin/posts') }}">Content</a>
+      {% if user.role == 'admin' %}<a href="{{ url('/admin/users') }}">Users</a>{% endif %}
+      <form method="post" action="{{ url('/logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <small>{{ user.email }}</small> <button type="submit">Sign out</button>
+      </form>
+    </nav>
+    {% endif %}
+  </header>
   <main>{% block content %}{% endblock %}</main>
   <footer><small>IPHS 400 Mini-Project #2</small></footer>
 </body>

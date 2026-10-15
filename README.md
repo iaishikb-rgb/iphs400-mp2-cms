@@ -9,13 +9,27 @@ Do not fork: a fork arrives without an Issues tab, and your tickets live in Issu
 2. `docs/mp2-grading-rubric_20260922.md` — how you are graded. Read it **before** you build or revise.
 3. `docs/mp2-setup_context-threshold-hook_20260922.md` — Exercise A, in Part 4 of the manual.
 
-## Run it
+## Live URL
+
+https://iaishikb-rgb.github.io/iphs400-mp2-cms/ — the Kenyon College Finance Club public site, served from the `gh-pages` branch.
+
+## Run locally
+
+Needs [uv](https://docs.astral.sh/uv/) and Python 3.12+.
 
 ```bash
 uv sync
-cp .env.example .env
-uv run cms serve        # then open http://localhost:8000/admin  -> "T00: hello admin"
+cp .env.example .env                      # demo passwords; change them for anything real
+uv run python scripts/seed_demo.py        # demo users, club Pages and Posts (safe to re-run)
+uv run pytest -q                          # optional: run the test suite
+uv run cms serve                          # admin console at http://localhost:8000/login
 ```
+
+Demo sign-ins (from `.env.example`): `admin@example.test` / `change-me-admin` (President, Admin)
+and `editor@example.test` / `change-me-editor` (Officer, Editor).
+
+To refresh the public site: `uv run cms publish` writes `site/`, and `uv run cms deploy` pushes it
+to `gh-pages`.
 
 ## What is here
 

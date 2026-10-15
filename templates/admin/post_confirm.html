@@ -2,9 +2,9 @@
 {% block content %}
   <h1>{{ heading }}</h1>
   <p>“{{ post.title }}” — {{ note }}</p>
-  <form method="post" action="/admin/posts/{{ post.id }}/{{ action }}">
+  <form method="post" action="{{ url('/admin/posts/' ~ (post.id) ~ '/' ~ (action)) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit">{{ button }}</button>
-    <a href="/admin/posts/{{ post.id }}">Cancel</a>
+    <a href="{{ url('/admin/posts/' ~ (post.id)) }}">Cancel</a>
   </form>
 {% endblock %}

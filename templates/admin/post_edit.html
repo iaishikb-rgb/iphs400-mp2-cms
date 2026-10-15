@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
   <h1>{{ title }}</h1>
-  <p><a href="/admin/posts">All Posts</a></p>
+  <p><a href="{{ url('/admin/posts') }}">All Posts</a></p>
   {% if error %}<p role="alert">{{ error }}</p>{% endif %}
   <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
     <form method="post" action="{{ '/admin/posts/' ~ post.id if post else '/admin/posts' }}"
@@ -23,7 +23,7 @@
         <textarea name="body" rows="14" style="width: 100%;">{{ form_body }}</textarea></label></p>
       <p>
         <button type="submit">Save Draft</button>
-        <button type="submit" formaction="/admin/posts/preview">Preview</button>
+        <button type="submit" formaction="{{ url('/admin/posts/preview') }}">Preview</button>
       </p>
     </form>
     <section style="flex: 1 1 20rem;" aria-label="Preview">
@@ -39,11 +39,11 @@
   {% if post %}
   <p>
     {% if user.role == 'admin' %}
-      {% if post.status == 'draft' %}<a href="/admin/posts/{{ post.id }}/publish">Publish</a> ·
-      {% else %}<a href="/admin/posts/{{ post.id }}/unpublish">Unpublish</a> ·{% endif %}
+      {% if post.status == 'draft' %}<a href="{{ url('/admin/posts/' ~ (post.id) ~ '/publish') }}">Publish</a> ·
+      {% else %}<a href="{{ url('/admin/posts/' ~ (post.id) ~ '/unpublish') }}">Unpublish</a> ·{% endif %}
     {% endif %}
     {% if user.role == 'admin' or post.status == 'draft' %}
-    <a href="/admin/posts/{{ post.id }}/delete">Delete this Post</a>
+    <a href="{{ url('/admin/posts/' ~ (post.id) ~ '/delete') }}">Delete this Post</a>
     {% endif %}
   </p>
   {% endif %}

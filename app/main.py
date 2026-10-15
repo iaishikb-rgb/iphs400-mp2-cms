@@ -11,11 +11,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Callable
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from app import auth, db, settings
+from app import auth, db, settings, users
 from app.routes import admin as admin_routes
 from app.routes import auth as auth_routes
 from app.routes import pages as page_routes
@@ -45,6 +46,22 @@ def create_app(database: Path | None = None,
     @app.exception_handler(auth.NotSignedIn)
     async def to_login(request: Request, exc: auth.NotSignedIn):
         return RedirectResponse("/login", status_code=303)
+
+    @app.exception_handler(HTTPException)
+    async def friendly_denied(request: Request, exc: HTTPException):
+        """Browsers get a page with the way back; API-style clients keep the JSON."""
+        if exc.status_code == 403 and "text/html" in request.headers.get("accept", ""):
+            user = None
+            if "user_id" in request.session:
+                conn = db.connect(app.state.database)
+                try:
+                    user = users.get_user(conn, request.session["user_id"])
+                finally:
+                    conn.close()
+            return templates.TemplateResponse(
+                request, "admin/denied.html",
+                {"title": "Not allowed", "user": user, "detail": exc.detail}, status_code=403)
+        return await http_exception_handler(request, exc)
 
     app.include_router(auth_routes.router)
     app.include_router(admin_routes.router)

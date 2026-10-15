@@ -75,3 +75,12 @@ def test_editor_is_refused_on_every_admin_only_route(world):
         assert r.status_code in (302, 303, 403), (method, template, r.status_code)
         if r.status_code in (302, 303):
             assert r.headers["location"] == "/login", (method, template)
+
+
+def test_browser_gets_a_friendly_403_page_and_api_clients_keep_json(client_as):
+    editor = client_as("editor")
+    page = editor.get("/admin/users", headers={"accept": "text/html"})
+    assert page.status_code == 403
+    assert "Not allowed" in page.text and 'href="/admin"' in page.text
+    plain = editor.get("/admin/users", headers={"accept": "application/json"})
+    assert plain.status_code == 403 and plain.json()["detail"]
