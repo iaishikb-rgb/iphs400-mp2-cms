@@ -73,13 +73,25 @@ def list_posts(conn: sqlite3.Connection, author_id: int | None = None) -> list[P
 
 
 def update_post(conn: sqlite3.Connection, post_id: int, title: str, body: str,
-                now: float, status: str) -> None:
-    """The slug is never touched here."""
+                now: float, status: str, slug: str | None = None) -> None:
+    """The slug changes only when a normalised `slug` is passed (Admin-only callers)."""
     with conn:
         conn.execute(
-            "UPDATE posts SET title = ?, body = ?, status = ?, updated_at = ? WHERE id = ?",
-            (title, body, status, now, post_id),
+            "UPDATE posts SET title = ?, body = ?, status = ?, updated_at = ?,"
+            " slug = COALESCE(?, slug) WHERE id = ?",
+            (title, body, status, now, slug, post_id),
         )
+
+
+def set_status(conn: sqlite3.Connection, post_id: int, status: str, now: float) -> None:
+    with conn:
+        conn.execute("UPDATE posts SET status = ?, updated_at = ? WHERE id = ?",
+                     (status, now, post_id))
+
+
+def slug_taken(conn: sqlite3.Connection, slug: str, post_id: int) -> bool:
+    return conn.execute("SELECT 1 FROM posts WHERE slug = ? AND id != ?",
+                        (slug, post_id)).fetchone() is not None
 
 
 def delete_post(conn: sqlite3.Connection, post_id: int) -> None:

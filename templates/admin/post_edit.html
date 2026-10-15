@@ -11,7 +11,12 @@
       <p><label>Title<br>
         <input type="text" name="title" value="{{ form_title }}" required style="width: 100%;"></label></p>
       {% if post %}
+      {% if user.role == 'admin' %}
+      <p><label>Slug<br>
+        <input type="text" name="slug" value="{{ post.slug }}" style="width: 100%;"></label></p>
+      {% else %}
       <p>Slug: <code>{{ post.slug }}</code> (set when first saved)</p>
+      {% endif %}
       <p>Status: {{ post.status | capitalize }}</p>
       {% endif %}
       <p><label>Body (Markdown)<br>
@@ -31,5 +36,15 @@
       {{ preview_html | safe }}
     </section>
   </div>
-  {% if post %}<p><a href="/admin/posts/{{ post.id }}/delete">Delete this Post</a></p>{% endif %}
+  {% if post %}
+  <p>
+    {% if user.role == 'admin' %}
+      {% if post.status == 'draft' %}<a href="/admin/posts/{{ post.id }}/publish">Publish</a> ·
+      {% else %}<a href="/admin/posts/{{ post.id }}/unpublish">Unpublish</a> ·{% endif %}
+    {% endif %}
+    {% if user.role == 'admin' or post.status == 'draft' %}
+    <a href="/admin/posts/{{ post.id }}/delete">Delete this Post</a>
+    {% endif %}
+  </p>
+  {% endif %}
 {% endblock %}
