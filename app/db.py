@@ -15,6 +15,17 @@ CREATE TABLE IF NOT EXISTS users (
     role          TEXT NOT NULL CHECK (role IN ('admin', 'editor')),
     active        INTEGER NOT NULL DEFAULT 1
 );
+
+CREATE TABLE IF NOT EXISTS posts (
+    id         INTEGER PRIMARY KEY,
+    title      TEXT NOT NULL,
+    slug       TEXT NOT NULL UNIQUE,
+    body       TEXT NOT NULL DEFAULT '',
+    status     TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+    author_id  INTEGER NOT NULL REFERENCES users (id),
+    created_at REAL NOT NULL,
+    updated_at REAL NOT NULL
+);
 """
 
 
