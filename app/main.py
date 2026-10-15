@@ -18,6 +18,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app import auth, db, settings
 from app.routes import admin as admin_routes
 from app.routes import auth as auth_routes
+from app.routes import pages as page_routes
 from app.routes import posts as post_routes
 from app.templating import templates
 
@@ -47,6 +48,7 @@ def create_app(database: Path | None = None,
     app.include_router(auth_routes.router)
     app.include_router(admin_routes.router)
     app.include_router(post_routes.router)
+    app.include_router(page_routes.router)
 
     @app.get("/")
     def public_home(request: Request):

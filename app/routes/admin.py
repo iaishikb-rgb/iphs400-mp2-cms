@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app import auth, db, posts, users
+from app import auth, db, pages, posts, users
 from app.templating import templates
 
 router = APIRouter(prefix="/admin")
@@ -17,6 +17,9 @@ catch_all = APIRouter(prefix="/admin")
 def admin_home(request: Request, user=Depends(auth.require_user), conn=Depends(db.get_db)):
     is_admin = user.role == "admin"
     counts = posts.count_by_status(conn, None if is_admin else user.id)
+    if is_admin:
+        for status, n in pages.count_by_status(conn).items():
+            counts[status] += n
     active, deactivated = users.count_by_active(conn) if is_admin else (None, None)
     return templates.TemplateResponse(
         request, "admin/hello.html",

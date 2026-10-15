@@ -4,7 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 
-from app import auth, db, posts
+from app import auth, db, pages, posts
 from app.markdown import render_markdown
 from app.templating import templates
 
@@ -46,18 +46,33 @@ def post_list(request: Request, status: str = "all", kind: str = Query("all", al
     """Content list. Unknown filter values fall back to All."""
     status = status if status in STATUS_FILTERS else "all"
     kind = kind if kind in TYPE_FILTERS else "all"
-    own_only = None if user.role == "admin" else user.id
-    # Pages arrive in T05; until then the Page filter shows an empty list.
-    shows_posts = kind != "page"
-    counts = posts.count_by_status(conn, own_only) if shows_posts else {}
-    shown = posts.list_posts(conn, own_only, STATUS_FILTERS[status]) if shows_posts else []
-    published, drafts = counts.get(posts.PUBLISHED, 0), counts.get(posts.DRAFT, 0)
+    is_admin = user.role == "admin"
+    own_only = None if is_admin else user.id
+    # Pages are President-only: Officers get Posts regardless of the type filter.
+    shows_posts = kind != "page" or not is_admin
+    shows_pages = is_admin and kind != "post"
+    counts = {posts.DRAFT: 0, posts.PUBLISHED: 0}
+    items = []
+    if shows_posts:
+        for k, n in posts.count_by_status(conn, own_only).items():
+            counts[k] += n
+        items += [{"kind": "Post", "title": p.title, "status": p.status, "by": p.author_email,
+                   "url": f"/admin/posts/{p.id}", "sort": (p.created_at, p.id)}
+                  for p in posts.list_posts(conn, own_only, STATUS_FILTERS[status])]
+    if shows_pages:
+        for k, n in pages.count_by_status(conn).items():
+            counts[k] += n
+        items += [{"kind": "Page", "title": p.title, "status": p.status, "by": None,
+                   "url": f"/admin/pages/{p.id}", "sort": (p.created_at, p.id)}
+                  for p in pages.list_pages(conn, STATUS_FILTERS[status])]
+    items.sort(key=lambda i: i["sort"], reverse=True)
+    published, drafts = counts[posts.PUBLISHED], counts[posts.DRAFT]
     status_links = [("all", "All", published + drafts), ("published", "Published", published),
                     ("draft", "Draft", drafts)]
     return templates.TemplateResponse(
         request, "admin/post_list.html",
-        {"title": "Content list", "user": user, "posts": shown, "status": status, "type": kind,
-         "status_links": status_links, "type_links": TYPE_FILTERS if user.role == "admin" else ()},
+        {"title": "Content list", "user": user, "items": items, "status": status, "type": kind,
+         "status_links": status_links, "type_links": TYPE_FILTERS if is_admin else ()},
     )
 
 

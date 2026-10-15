@@ -33,7 +33,10 @@ def main() -> int:
         "editor": (os.environ.get("CMS_EDITOR_EMAIL", "editor@example.test"), editor_pw),
     })
     print(f"Users created: {', '.join(created) or 'none (already present)'}")
-    # TODO (later tickets): demo posts and pages, one draft and one published.
+    from app.pages import seed_pages
+
+    print(f"Pages created: {', '.join(seed_pages(settings.DATABASE_PATH)) or 'none (already present)'}")
+    # TODO (later tickets): demo posts, one draft and one published.
     return 0
 
 

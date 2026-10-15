@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>{{ title }}</h1>
+  <p><a href="/admin/posts?type=page">All Pages</a></p>
+  {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+  <form method="post" action="{{ '/admin/pages/' ~ page.id if page else '/admin/pages' }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <p><label>Title<br>
+      <input type="text" name="title" value="{{ form_title }}" required style="width: 100%;"></label></p>
+    {% if page %}
+    <p><label>Slug<br>
+      <input type="text" name="slug" value="{{ page.slug }}" style="width: 100%;"></label></p>
+    <p>Status: {{ page.status | capitalize }}</p>
+    {% endif %}
+    <p><label>Navigation order<br>
+      <input type="number" name="nav_order" value="{{ form_nav_order }}"></label></p>
+    <p><label>Body (Markdown)<br>
+      <textarea name="body" rows="14" style="width: 100%;">{{ form_body }}</textarea></label></p>
+    <p><button type="submit">Save</button></p>
+  </form>
+  <section aria-label="Preview">
+    <h2>Preview</h2>
+    {% if not page or page.status == 'draft' %}<p><strong>Draft, not Live</strong></p>
+    {% else %}<p><strong>Published</strong> (Live after the next Publish run)</p>{% endif %}
+    {{ preview_html | safe }}
+  </section>
+  {% if page %}
+  <p>
+    {% if page.status == 'draft' %}<a href="/admin/pages/{{ page.id }}/publish">Publish</a>
+    {% else %}<a href="/admin/pages/{{ page.id }}/unpublish">Unpublish</a>{% endif %} ·
+    <a href="/admin/pages/{{ page.id }}/delete">Delete this Page</a>
+  </p>
+  {% endif %}
+{% endblock %}
