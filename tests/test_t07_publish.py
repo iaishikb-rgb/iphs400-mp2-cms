@@ -147,6 +147,19 @@ def test_sanitizer_in_published_output(client_as, tmp_path):
     assert 'href="https://example.com"' in html
 
 
+def test_script_and_onerror_payloads_in_title_and_body_are_inert(client_as, tmp_path):
+    editor = client_as("editor")
+    admin = president_for(editor)
+    title = "Probe <script>window.__xss=1</script>"
+    body = '<script>window.__xss=1</script>\n\n<img src=x onerror="window.__xss=2">'
+    live_post(editor, admin, title, body)
+    published = (render(editor, tmp_path) / "posts").rglob("*.html")
+    pane = editor.post("/admin/posts/preview", data={
+        "title": title, "body": body, "csrf_token": csrf_of(editor, "/admin/posts/new")}).text
+    for html in [pane, *(f.read_text() for f in published)]:
+        assert "<script" not in html and "<img" not in html  # shown as escaped text instead
+
+
 def test_no_root_absolute_paths_anywhere(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
