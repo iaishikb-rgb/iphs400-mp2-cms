@@ -33,3 +33,13 @@
 ## T05 (issue #6)
 - Drift: Claude added Pages to the dashboard counts without the ticket asking, justifying it from CONTEXT.md. I kept it because the presidents do want to see unpublished pages.
 - Review caught a bad nav order ("abc" or a negative number) silently becoming 0. Now rejected with an error.
+
+## T06 (issue #7)
+- Drift caught by review: first version let a President demote themselves; the spec says they can't. Fixed before commit.
+- Claude added an 8-character minimum password the ticket didn't ask for. Kept it.
+- Gap found: users have no display name, so the public byline "By <name>" from the grill had nowhere to come from. Pushed into T07.
+
+## T06 (issue #7)
+- Drift caught by review: first version let a President demote themselves; the spec says they can't. Fixed before commit.
+- Claude added an 8-character minimum password the ticket didn't ask for. Kept it.
+- Gap found: users have no display name, so the public byline "By <name>" from the grill had nowhere to come from. Pushed into T07.
