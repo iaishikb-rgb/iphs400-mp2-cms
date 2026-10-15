@@ -17,6 +17,9 @@ import sys
 
 
 def main() -> int:
+    # Importing settings loads .env into the environment, so it must come first.
+    from app import settings
+
     admin_pw = os.environ.get("CMS_ADMIN_PASSWORD")
     editor_pw = os.environ.get("CMS_EDITOR_PASSWORD")
     if not admin_pw or not editor_pw:
@@ -24,8 +27,6 @@ def main() -> int:
               "(copy .env.example).")
         return 1
 
-    # Local import so the script runs from a plain `uv run python scripts/...`.
-    from app import settings
     from app.seed import seed_users
 
     created = seed_users(settings.DATABASE_PATH, {

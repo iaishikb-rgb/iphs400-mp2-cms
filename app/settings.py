@@ -8,6 +8,36 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATES = ROOT / "templates"
 SITE = ROOT / "site"
 
+
+def load_env_file(path: Path) -> None:
+    """Load KEY=VALUE lines from `path` into os.environ (stdlib only).
+
+    Variables already in the environment win, so a real export or a hosting
+    setting always overrides .env. A missing file is fine.
+    """
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export "):]
+        key, sep, value = line.partition("=")
+        key, value = key.strip(), value.strip()
+        if not sep or not key:
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        os.environ.setdefault(key, value)
+
+
+DEFAULT_ENV_FILE = ROOT / ".env"
+# CMS_ENV_FILE lets the test suite point at a scratch copy of .env.example.
+load_env_file(Path(os.environ.get("CMS_ENV_FILE", DEFAULT_ENV_FILE)))
+
 DEV_SECRET_KEY = "dev-only-not-for-production"
 EXAMPLE_SECRET_KEY = "change-me-to-a-long-random-string"  # the value in .env.example
 SECRET_KEY = os.environ.get("CMS_SECRET_KEY", DEV_SECRET_KEY)
