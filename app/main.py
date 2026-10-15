@@ -56,7 +56,9 @@ def create_app(database: Path | None = None,
     def public_home(request: Request):
         return templates.TemplateResponse(
             request, "public/home.html",
-            {"title": settings.SITE_TITLE, "items": []},
+            {"title": settings.SITE_TITLE, "site_title": settings.SITE_TITLE, "root": "",
+             "nav": [], "latest": [], "next_meeting_html": "",
+             "contact_email": settings.CONTACT_EMAIL},
         )
 
     # Later ticket routers plug in here, above the catch-all.

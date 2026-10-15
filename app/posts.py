@@ -18,23 +18,29 @@ class Post:
     status: str
     author_id: int
     author_email: str
+    author_name: str
     created_at: float
     updated_at: float
 
 
 _SELECT = """
-SELECT p.*, u.email AS author_email
+SELECT p.*, u.email AS author_email, u.display_name AS author_name
 FROM posts p JOIN users u ON u.id = p.author_id
 """
 
 
 def _row_to_post(row: sqlite3.Row) -> Post:
     return Post(row["id"], row["title"], row["slug"], row["body"], row["status"],
-                row["author_id"], row["author_email"], row["created_at"], row["updated_at"])
+                row["author_id"], row["author_email"], row["author_name"], row["created_at"], row["updated_at"])
+
+
+# "index" would collide with the generated index.html / posts/index.html.
+RESERVED_SLUGS = {"index"}
 
 
 def slugify(title: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "post"
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-") or "post"
+    return slug + "-1" if slug in RESERVED_SLUGS else slug
 
 
 def _unique_slug(conn: sqlite3.Connection, title: str) -> str:

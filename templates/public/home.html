@@ -1,8 +1,10 @@
-{% extends "base.html" %}
+{% extends "public/layout.html" %}
 {% block content %}
-  <h1>{{ title }}</h1>
-  {% if items %}
-    <ul>{% for item in items %}<li><a href="{{ item.href }}">{{ item.title }}</a></li>{% endfor %}</ul>
+  {% if next_meeting_html %}<section aria-label="Next meeting">{{ next_meeting_html | safe }}</section>{% endif %}
+  <p>Contact: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+  <h2>Latest Posts</h2>
+  {% if latest %}
+    <ul>{% for p in latest %}<li><a href="{{ root }}{{ p.href }}">{{ p.title }}</a> <small>{{ p.date }}</small></li>{% endfor %}</ul>
   {% else %}
     <p>Nothing published yet.</p>
   {% endif %}

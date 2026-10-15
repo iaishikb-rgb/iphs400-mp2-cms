@@ -17,6 +17,7 @@ class User:
     email: str
     role: str  # "admin" (President) or "editor" (Officer)
     active: bool
+    display_name: str = ""
 
 
 def normalize_email(email: str) -> str:
@@ -24,15 +25,27 @@ def normalize_email(email: str) -> str:
 
 
 def _row_to_user(row: sqlite3.Row) -> User:
-    return User(row["id"], row["email"], row["role"], bool(row["active"]))
+    return User(row["id"], row["email"], row["role"], bool(row["active"]), row["display_name"])
 
 
-def create_user(conn: sqlite3.Connection, email: str, password: str, role: str) -> None:
+def create_user(conn: sqlite3.Connection, email: str, password: str, role: str,
+                display_name: str = "") -> None:
     with conn:
         conn.execute(
-            "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
-            (normalize_email(email), _hasher.hash(password), role),
+            "INSERT INTO users (email, password_hash, role, display_name) VALUES (?, ?, ?, ?)",
+            (normalize_email(email), _hasher.hash(password), role, display_name.strip()),
         )
+
+
+def set_display_name(conn: sqlite3.Connection, user_id: int, display_name: str) -> None:
+    """The name shown in public bylines. Blank is refused: a byline needs a name."""
+    display_name = display_name.strip()
+    if not display_name:
+        raise GuardRailError("A display name is required")
+    if get_user(conn, user_id) is None:
+        raise GuardRailError("Unknown User")
+    with conn:
+        conn.execute("UPDATE users SET display_name = ? WHERE id = ?", (display_name, user_id))
 
 
 def get_user(conn: sqlite3.Connection, user_id: int) -> User | None:

@@ -7,10 +7,12 @@ from tests.test_t02_posts import create_post, post_url
 from tests.test_t03_president_control import president_for
 
 
-def make_user(admin, email="new@kenyon.edu", role="editor", password="first-pw-123"):
+def make_user(admin, email="new@kenyon.edu", role="editor", password="first-pw-123",
+              display_name="New Person"):
     token = csrf_of(admin, "/admin/users")
     return admin.post("/admin/users", data={"email": email, "role": role,
-                                            "password": password, "csrf_token": token},
+                                            "password": password, "display_name": display_name,
+                                            "csrf_token": token},
                       follow_redirects=False)
 
 

@@ -15,11 +15,12 @@ from app.templating import templates
 router = APIRouter(prefix="/admin/users", dependencies=[Depends(auth.require_role("admin"))])
 
 
-def _list(request, user, conn, error=None, form_email="", form_role="editor", status_code=200):
+def _list(request, user, conn, error=None, form_email="", form_role="editor", status_code=200,
+          form_name=""):
     return templates.TemplateResponse(
         request, "admin/user_list.html",
         {"title": "Users", "user": user, "users": users.list_users(conn), "error": error,
-         "form_email": form_email, "form_role": form_role, "roles": users.ROLES},
+         "form_email": form_email, "form_role": form_role, "form_name": form_name, "roles": users.ROLES},
         status_code=status_code)
 
 
@@ -30,22 +31,24 @@ def user_list(request: Request, user=Depends(auth.require_user), conn=Depends(db
 
 @router.post("")
 def user_create(request: Request, email: str = Form(""), role: str = Form("editor"),
-                password: str = Form(""), user=Depends(auth.require_user),
+                password: str = Form(""), display_name: str = Form(""), user=Depends(auth.require_user),
                 conn=Depends(db.get_db)):
     email = users.normalize_email(email)
 
     def fail(message):
-        return _list(request, user, conn, message, email, role, 400)
+        return _list(request, user, conn, message, email, role, 400, display_name)
 
     local = email.removesuffix(users.EMAIL_DOMAIN)
     if local == email or not local or "@" in local or " " in local:
         return fail(f"Use a Kenyon email address ending {users.EMAIL_DOMAIN}")
+    if not display_name.strip():
+        return fail("Give the User a display name; it is shown in public bylines")
     if role not in users.ROLES:
         return fail("Choose a role")
     if len(password) < users.MIN_PASSWORD_LENGTH:
         return fail(f"The first password needs at least {users.MIN_PASSWORD_LENGTH} characters")
     try:
-        users.create_user(conn, email, password, role)
+        users.create_user(conn, email, password, role, display_name)
     except sqlite3.IntegrityError:
         return fail("A User with that email already exists")
     return RedirectResponse("/admin/users", status_code=303)
@@ -65,6 +68,13 @@ def _change(request: Request, user, conn, user_id: int, apply) -> object:
 def user_role(user_id: int, request: Request, role: str = Form(""),
               user=Depends(auth.require_user), conn=Depends(db.get_db)):
     return _change(request, user, conn, user_id, lambda: users.set_role(conn, user_id, role, user.id))
+
+
+@router.post("/{user_id}/name")
+def user_name(user_id: int, request: Request, display_name: str = Form(""),
+              user=Depends(auth.require_user), conn=Depends(db.get_db)):
+    return _change(request, user, conn, user_id,
+                   lambda: users.set_display_name(conn, user_id, display_name))
 
 
 @router.post("/{user_id}/deactivate")

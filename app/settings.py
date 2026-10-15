@@ -13,6 +13,7 @@ EXAMPLE_SECRET_KEY = "change-me-to-a-long-random-string"  # the value in .env.ex
 SECRET_KEY = os.environ.get("CMS_SECRET_KEY", DEV_SECRET_KEY)
 DATABASE_PATH = Path(os.environ.get("CMS_DATABASE", ROOT / "cms.db"))
 SITE_TITLE = os.environ.get("CMS_SITE_TITLE", "My CMS")
+CONTACT_EMAIL = os.environ.get("CMS_CONTACT_EMAIL", "financeclub@kenyon.edu")
 # Set this to your Pages URL once you deploy, e.g.
 # https://yourname.github.io/iphs400-mp2-cms/
 BASE_PATH = os.environ.get("CMS_BASE_PATH", "")

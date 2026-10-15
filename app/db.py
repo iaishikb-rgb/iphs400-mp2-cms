@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
     email         TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role          TEXT NOT NULL CHECK (role IN ('admin', 'editor')),
-    active        INTEGER NOT NULL DEFAULT 1
+    active        INTEGER NOT NULL DEFAULT 1,
+    display_name  TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS posts (
@@ -37,6 +38,11 @@ CREATE TABLE IF NOT EXISTS pages (
     created_at REAL NOT NULL,
     updated_at REAL NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS meta (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 """
 
 
@@ -50,6 +56,9 @@ def init_db(path: Path) -> None:
     conn = connect(path)
     with conn:
         conn.executescript(SCHEMA)
+        columns = {r["name"] for r in conn.execute("PRAGMA table_info(users)")}
+        if "display_name" not in columns:  # database made before T07
+            conn.execute("ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
     conn.close()
 
 

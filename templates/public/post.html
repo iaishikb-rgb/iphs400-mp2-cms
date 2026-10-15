@@ -1,0 +1,6 @@
+{% extends "public/layout.html" %}
+{% block content %}
+  <h1>{{ title }}</h1>
+  <p><em>By {{ byline_name }}, {{ date }}</em></p>
+  {{ body_html | safe }}
+{% endblock %}

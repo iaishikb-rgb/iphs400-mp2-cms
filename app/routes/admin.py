@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app import auth, db, pages, posts, users
+from app import auth, db, pages, posts, publish, users
 from app.templating import templates
 
 router = APIRouter(prefix="/admin")
@@ -25,7 +25,8 @@ def admin_home(request: Request, user=Depends(auth.require_user), conn=Depends(d
         request, "admin/hello.html",
         {"title": "Admin", "user": user, "drafts": counts[posts.DRAFT],
          "published": counts[posts.PUBLISHED], "active_users": active,
-         "deactivated_users": deactivated},
+         "deactivated_users": deactivated,
+         "pending": publish.has_pending_changes(conn)},
     )
 
 

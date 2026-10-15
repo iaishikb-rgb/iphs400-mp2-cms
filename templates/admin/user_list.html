@@ -4,10 +4,17 @@
   <p><a href="/admin">Dashboard</a></p>
   {% if error %}<p role="alert">{{ error }}</p>{% endif %}
   <table>
-    <thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody>
     {% for u in users %}
       <tr>
+        <td>
+          <form method="post" action="/admin/users/{{ u.id }}/name">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="display_name" value="{{ u.display_name }}" aria-label="Display name for {{ u.email }}" required>
+            <button type="submit">Save name</button>
+          </form>
+        </td>
         <td>{{ u.email }}</td>
         <td>
           <form method="post" action="/admin/users/{{ u.id }}/role">
@@ -32,6 +39,7 @@
   <h2>New User</h2>
   <form method="post" action="/admin/users">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Display name (public byline) <input type="text" name="display_name" value="{{ form_name }}" required></label>
     <label>Kenyon email <input type="email" name="email" value="{{ form_email }}" required></label>
     <label>Role
       <select name="role">

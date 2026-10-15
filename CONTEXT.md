@@ -20,6 +20,8 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 
 **Idle sign-out**: A User is signed out automatically after about 2 hours without activity, because the Club laptop is shared at meetings.
 
+**Display name**: The name a User is known by publicly, e.g. "Kim Lee". A President sets it when creating the User and can edit it later. It is the only name used in a Byline; the email address is never shown.
+
 **Deactivated**: A User switched off by an Admin when their time in office ends. They can no longer sign in, and any open session ends at their next action. Their Posts keep their name as author. An Admin can reactivate them. Users are never deleted. At least one President must always stay active, and a President cannot deactivate themselves.
 
 ## Content
@@ -38,7 +40,7 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 
 **Recruiting Page**: The Page for current members: the resume review form link and standing guides. Kept separate from the Join Page (one Page, one audience).
 
-**Homepage**: A Page edited by Admins. The next meeting (every other week, Oden 110) is the first thing a Visitor sees, followed by the contact email and the latest Posts.
+**Homepage**: A Page edited by Admins, found by its slug `homepage`, which never changes (do not edit it). The next meeting (every other week, Oden 110) is the first thing a Visitor sees, followed by the contact email and the latest Posts.
 
 **Next-meeting line**: Plain text at the top of the Homepage, e.g. "Next meeting: Wed Oct 28, 7 pm, Oden 110". A President updates it the night before each meeting, the same habit as the email reminder. There is no calendar or automatic date logic.
 
@@ -53,6 +55,8 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 **Event**: Not a separate thing. An event is announced in a Post.
 
 **Slug**: The short address-name of a Post or Page (e.g. `spring-stock-pitch`). Made from the title once, when first saved, and unchanged when the title is edited. Only an Admin can edit it; an old slug is not redirected.
+
+**Public paths**: Pages are published at `<slug>.html` and Posts at `posts/<slug>.html`, so a Post slug and a Page slug can never collide. The slug `index` is reserved.
 
 **Unpublish**: An Admin returns a Published Post or Page to Draft. It leaves the public site at the next Publish run but is kept.
 

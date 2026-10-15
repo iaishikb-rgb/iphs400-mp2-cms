@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ title }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ root }}style.css">
+</head>
+<body>
+  <header>
+    <a href="{{ root }}index.html">{{ site_title }}</a>
+    <nav aria-label="Main">
+      {% for item in nav %}<a href="{{ root }}{{ item.href }}">{{ item.title }}</a> {% endfor %}
+    </nav>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer><small>{{ site_title }}</small></footer>
+</body>
+</html>
