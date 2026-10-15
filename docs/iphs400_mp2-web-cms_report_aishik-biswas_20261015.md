@@ -7,7 +7,7 @@
 
 I built a small CMS for the Kenyon College Finance Club, which I run alongside my two co-presidents, Lucas Flynn and Madeline Ha. Our current Wix website does not adequately represent the club’s activities. It lists no current officers or meeting times, its “Contact Us” link leads back to the homepage, and a Wix advertising banner appears across the top. For an alumnus visiting the website, this could suggest that the club is no longer active. Most of our information is communicated through club emails, which means members often have to search earlier messages for basic details, including our meetings every other week in Oden 110.
 
-The CMS provides a local admin console built with FastAPI and SQLite, where Presidents and Officers can sign in, write Posts and Pages in Markdown, and preview their work. The `cms publish` command generates a static site from Live content for publication on GitHub Pages. Presidents have administrator access, while Officers have editor access. The implementation covers all seven required capabilities, with 122 tests in the final suite.
+The CMS provides a local admin console built with FastAPI and SQLite, where Presidents and Officers can sign in, write Posts and Pages in Markdown, and preview their work. The `cms publish` command generates a static site from Live content for publication on GitHub Pages. Presidents have administrator access, while Officers have editor access. The implementation covers all seven required capabilities, with 123 tests in the final suite.
 
 Several decisions emerged from my responses to the grill, particularly where I changed or rejected Claude’s recommendations:
 

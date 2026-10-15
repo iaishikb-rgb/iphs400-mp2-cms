@@ -84,7 +84,7 @@ None of the tests actually ran the seed script, which explains why they passed d
 
 I drafted this statement with Claude’s help and then edited and rephrased it.
 
-### Development backends used
+### Backends used
 
 | Provider | Models | Use |
 | --- | --- | --- |
