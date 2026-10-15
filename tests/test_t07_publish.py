@@ -97,7 +97,7 @@ def test_byline_uses_display_name_never_email_and_pages_have_none(client_as, tmp
     live_page(admin, "About")
     out = render(editor, tmp_path)
     post = (out / "posts" / "bylined.html").read_text()
-    assert re.search(r"By Demo Officer, \d{4}-\d{2}-\d{2}", post)
+    assert re.search(r"By Club Officer, \d{4}-\d{2}-\d{2}", post)
     assert "@" not in "".join(p.read_text() for p in out.rglob("*.html")).replace(
         "financeclub@kenyon.edu", "")
     assert "By " not in (out / "about.html").read_text()
@@ -108,7 +108,7 @@ def test_deactivated_author_name_still_shows(client_as, tmp_path):
     admin = president_for(editor)
     live_post(editor, admin, "Old Post")
     user_act(admin, "editor@example.test", "deactivate")
-    assert "By Demo Officer" in (render(editor, tmp_path) / "posts" / "old-post.html").read_text()
+    assert "By Club Officer" in (render(editor, tmp_path) / "posts" / "old-post.html").read_text()
 
 
 def test_president_creates_and_renames_display_name(client_as, tmp_path):

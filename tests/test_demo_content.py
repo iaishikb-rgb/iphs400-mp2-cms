@@ -40,3 +40,15 @@ def test_published_demo_content_reaches_site_and_the_draft_does_not(tmp_path):
     everything = "".join(f.read_text() for f in out.rglob("*.html"))
     assert "Lucas Flynn" in everything and "William Blair" in everything
     assert "sector team writeup" not in everything.lower()
+
+
+def test_reseeding_resets_demo_display_names(tmp_path):
+    database = seeded(tmp_path)
+    conn = db.connect(database)
+    conn.execute("UPDATE users SET display_name = 'Old Name'")
+    conn.commit()
+    conn.close()
+    seed_users(database, ACCOUNTS)
+    names = {r["role"]: r["display_name"] for r in
+             db.connect(database).execute("SELECT role, display_name FROM users")}
+    assert names == {"admin": "Aishik Biswas", "editor": "Club Officer"}

@@ -30,7 +30,7 @@ Submit IPHS 400 MP2 (Kenyon Finance Club CMS) as `mp2-final` by Thu Oct 15, 2:40
 ## Decisions and why
 - No history rewrite — a force-push on main was not worth the risk; `.mailmap` covers attribution in `git log` views. GitHub's UI still shows the old placeholder email.
 - Admin links go through `url()` instead of literal `href="/...` — the checker greps for the literal; the admin console is local and needs root paths.
-- Demo Posts are by "Demo President" / "Demo Officer" (seed display names). The Resume review form has no real URL; the Join page says to email the club.
+- Demo accounts' display names are "Aishik Biswas" (President) and "Club Officer" (Officer); re-seeding resets them. The Resume review form has no real URL; the Join page says to email the club.
 
 ## Gotchas
 - The real `CMS_SECRET_KEY` once landed in a session transcript. Check transcripts for secrets before committing them.
