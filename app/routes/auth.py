@@ -14,7 +14,9 @@ GENERIC_ERROR = "Email or password is incorrect"
 
 @router.get("/login")
 def login_form(request: Request):
-    return templates.TemplateResponse(request, "admin/login.html", {"title": "Sign in", "error": None})
+    return templates.TemplateResponse(
+        request, "admin/login.html", {"title": "Sign in", "error": None}
+    )
 
 
 @router.post("/login")
@@ -22,7 +24,7 @@ def login(request: Request, email: str = Form(""), password: str = Form(""),
           conn=Depends(db.get_db)):
     user = users.authenticate(conn, email, password)
     if user is None:
-            return templates.TemplateResponse(
+        return templates.TemplateResponse(
             request, "admin/login.html", {"title": "Sign in", "error": GENERIC_ERROR},
             status_code=401,
         )

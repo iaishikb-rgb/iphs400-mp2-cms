@@ -1,19 +1,5 @@
 """T01: sign in and out. All through the HTTP app (seam 1)."""
-import re
-
-
-def csrf_of(client, path="/login"):
-    html = client.get(path).text
-    return re.search(r'name="csrf_token" value="([^"]+)"', html).group(1)
-
-
-def sign_in(client, email, password, token=None):
-    return client.post(
-        "/login",
-        data={"email": email, "password": password,
-              "csrf_token": token or csrf_of(client)},
-        follow_redirects=False,
-    )
+from tests.conftest import csrf_of, sign_in
 
 
 def test_user_signs_in_and_lands_on_admin(client):

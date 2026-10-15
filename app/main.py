@@ -11,11 +11,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Callable
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app import auth, db, settings
+from app.routes import admin as admin_routes
+from app.routes import auth as auth_routes
 from app.templating import templates
 
 
@@ -40,19 +42,8 @@ def create_app(database: Path | None = None,
     async def to_login(request: Request, exc: auth.NotSignedIn):
         return RedirectResponse("/login", status_code=303)
 
-    from app.routes import auth as auth_routes
-
     app.include_router(auth_routes.router)
-
-    admin = APIRouter(prefix="/admin")
-
-    @admin.get("")
-    def admin_home(request: Request, user=Depends(auth.require_user)):
-        return templates.TemplateResponse(
-            request, "admin/hello.html", {"title": "Admin", "user": user}
-        )
-
-    app.include_router(admin)
+    app.include_router(admin_routes.router)
 
     @app.get("/")
     def public_home(request: Request):
@@ -61,14 +52,8 @@ def create_app(database: Path | None = None,
             {"title": settings.SITE_TITLE, "items": []},
         )
 
-    # Later ticket routers plug in here, above the catch-all below.
-
-    # Keep LAST: an unknown /admin address still sends anonymous visitors to login.
-    @app.api_route("/admin/{rest:path}", include_in_schema=False,
-                   methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-                   dependencies=[Depends(auth.require_user)])
-    def admin_unknown(rest: str):
-        raise HTTPException(status_code=404)
+    # Later ticket routers plug in here, above the catch-all.
+    app.include_router(admin_routes.catch_all)  # keep LAST
 
     return app
 

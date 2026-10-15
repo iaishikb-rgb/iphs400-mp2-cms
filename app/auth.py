@@ -42,10 +42,14 @@ async def csrf_protect(request: Request) -> None:
         raise HTTPException(status_code=403, detail="Invalid or missing CSRF token")
 
 
+def now(request: Request) -> float:
+    return request.app.state.clock()
+
+
 def start_session(request: Request, user: users.User) -> None:
     request.session.clear()  # fresh session on sign-in
     request.session["user_id"] = user.id
-    request.session["last_seen"] = request.app.state.clock()
+    request.session["last_seen"] = now(request)
     ensure_csrf(request)
 
 
@@ -57,15 +61,15 @@ def require_user(request: Request, conn=Depends(db.get_db)) -> users.User:
     """Signed in, not idle too long, and still active; otherwise to the login page."""
     user_id = request.session.get("user_id")
     last_seen = request.session.get("last_seen")
-    now = request.app.state.clock()
-    if user_id is None or last_seen is None or now - last_seen > settings.IDLE_TIMEOUT_SECONDS:
+    current = now(request)
+    if user_id is None or last_seen is None or current - last_seen > settings.IDLE_TIMEOUT_SECONDS:
         end_session(request)
         raise NotSignedIn
     user = users.get_user(conn, user_id)
     if user is None or not user.active:
         end_session(request)
         raise NotSignedIn
-    request.session["last_seen"] = now
+    request.session["last_seen"] = current
     return user
 
 

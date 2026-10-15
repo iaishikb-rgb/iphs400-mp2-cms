@@ -9,6 +9,8 @@ so access-control tests stay one line:
 """
 from __future__ import annotations
 
+import re
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -60,21 +62,29 @@ def client(make_app) -> TestClient:
     return TestClient(make_app())
 
 
+def csrf_of(client: TestClient, path: str = "/login") -> str:
+    """Read the CSRF token out of the form on `path`."""
+    html = client.get(path).text
+    return re.search(r'name="csrf_token" value="([^"]+)"', html).group(1)
+
+
+def sign_in(client: TestClient, email: str, password: str, token: str | None = None):
+    return client.post(
+        "/login",
+        data={"email": email, "password": password,
+              "csrf_token": token or csrf_of(client)},
+        follow_redirects=False,
+    )
+
+
 @pytest.fixture
 def client_as(make_app):
     """Return a factory: client_as("editor") -> a logged-in TestClient."""
 
-    def _csrf(c: TestClient) -> str:
-        page = c.get("/login")
-        return page.text.split('name="csrf_token" value="')[1].split('"')[0]
-
     def _login(role: str) -> TestClient:
         user = DEMO_USERS[role]
         c = TestClient(make_app())
-        response = c.post("/login", data={"email": user["email"],
-                                          "password": user["password"],
-                                          "csrf_token": _csrf(c)},
-                          follow_redirects=False)
+        response = sign_in(c, user["email"], user["password"])
         assert response.status_code in (200, 302, 303), (
             f"Login as {role} failed with {response.status_code}")
         return c
