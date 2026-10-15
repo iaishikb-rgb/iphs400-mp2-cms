@@ -21,3 +21,7 @@
 ## T02 (issue #3)
 - Review caught an information leak: an Officer got 404 for a missing Post but 403 for someone else's, so they could tell which Post IDs existed. Fixed: both are 403 for Officers.
 - Two rules couldn't be tested yet (Officer edit reverts Published to Draft; only a President deletes a Published Post), so they were carried into T03.
+
+## T03 (issue #4)
+- Review caught that title/body and slug saved in two separate transactions, so a failed slug write could leave a half-saved Post. Fixed to one transaction.
+- I accepted that renaming a Live Post's slug breaks old links: that's in the spec. Presidents rarely rename, and we'd re-send the link in the club email anyway.
