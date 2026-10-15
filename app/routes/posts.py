@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from app import auth, db, pages, posts
 from app.markdown import render_markdown
-from app.templating import templates
+from app.templating import flash, templates
 
 router = APIRouter(prefix="/admin/posts")
 
@@ -88,6 +88,7 @@ def post_create(request: Request, title: str = Form(""), body: str = Form(""),
     if not title:
         return _editor_page(request, user, None, title, body, "A Post needs a title", 400)
     post_id = posts.create_post(conn, title, body, user.id, auth.now(request))
+    flash(request, "Saved.")
     return RedirectResponse(f"/admin/posts/{post_id}", status_code=303)
 
 
@@ -122,6 +123,7 @@ def post_update(post_id: int, request: Request, title: str = Form(""), body: str
     # An Editor's edit sends a Published Post back to Draft; an Admin's leaves it alone.
     status = post.status if user.role == "admin" else posts.DRAFT
     posts.update_post(conn, post_id, title, body, auth.now(request), status, new_slug)
+    flash(request, "Saved.")
     return RedirectResponse(f"/admin/posts/{post_id}", status_code=303)
 
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Hello admin</h1>
+  <h1>Hello {{ user.display_name or user.email }}</h1>
   <h2>Dashboard</h2>
   <p>Signed in as {{ user.email }} ({{ user.role }}).</p>
   <p><a href="{{ url('/admin/posts/new') }}">New Post</a> · <a href="{{ url('/admin/posts') }}">Content list</a>{% if user.role == 'admin' %} · <a href="{{ url('/admin/posts?type=page') }}">Pages</a> · <a href="{{ url('/admin/pages/new') }}">New Page</a> · <a href="{{ url('/admin/users') }}">Users</a>{% endif %}</p>

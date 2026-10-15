@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from app import auth, db, pages
 from app.markdown import render_markdown
 from app.posts import DRAFT, PUBLISHED, slugify
-from app.templating import templates
+from app.templating import flash, templates
 
 router = APIRouter(prefix="/admin/pages", dependencies=[Depends(auth.require_role("admin"))])
 
@@ -59,6 +59,7 @@ def page_create(request: Request, title: str = Form(""), body: str = Form(""),
     if _int(nav_order) < 0:
         return _editor(request, user, None, title, body, nav_order, NAV_ERROR, 400)
     page_id = pages.create_page(conn, title, body, _int(nav_order), auth.now(request))
+    flash(request, "Saved.")
     return RedirectResponse(f"/admin/pages/{page_id}", status_code=303)
 
 
@@ -84,6 +85,7 @@ def page_update(page_id: int, request: Request, title: str = Form(""), body: str
         return _editor(request, user, page, title, body, _int(nav_order),
                        f"The slug “{new_slug}” is already used by another Page", 400)
     pages.update_page(conn, page_id, title, body, _int(nav_order), auth.now(request), new_slug)
+    flash(request, "Saved.")
     return RedirectResponse(f"/admin/pages/{page_id}", status_code=303)
 
 
