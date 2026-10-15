@@ -1,8 +1,5 @@
 # IPHS 400 — Mini-Project #2 starter (Web CMS)
 
-Click **Use this template** → name your repo **`iphs400-mp2-cms`** → make it **Public**.
-Do not fork: a fork arrives without an Issues tab, and your tickets live in Issues.
-
 ## Start here
 
 1. `docs/manual_iphs400_mp2-web-cms_20260922.md` — the manual. Read Part 0 and Part 1 first.
@@ -41,10 +38,6 @@ app/, templates/   the T00 skeleton — every CMS feature is yours to build
 docs/adr/          two example decision records
 ```
 
-Two functions are deliberately unfinished and their tests fail until you write them:
-`decide()` in `.claude/hooks/ctx_guard.py` and `spend()` in `scripts/usage_report.py`.
-Both are graded in Stage 2. Use `/tdd`, as the manual says.
-
 ## Deadlines
 
 Stage 1 (`mp2-mvp` tag): Tue Sep 29, 2:40 pm Eastern. A preliminary checkpoint, past and ungraded; its 15 points are credited for the tag.
@@ -53,8 +46,6 @@ MP2plus (optional extra credit): assigned Sun Oct 11, due Tue Oct 20, 2:40 pm Ea
 MP2 is graded as a score out of 100, scaled to 5% of the course grade.
 
 Run `uv run python scripts/check_submission.py --stage 2` before you submit.
-
-## Generative AI Use Statement
 
 ## Generative AI Use Statement
 

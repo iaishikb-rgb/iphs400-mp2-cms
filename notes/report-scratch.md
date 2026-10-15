@@ -43,5 +43,4 @@
 - Drift caught by review: first version let a President demote themselves; the spec says they can't. Fixed before commit.
 - Claude added an 8-character minimum password the ticket didn't ask for. Kept it.
 - Gap found: users have no display name, so the public byline "By <name>" from the grill had nowhere to come from. Pushed into T07.
-- Hand-testing after T06: seed_demo.py refused to run on fresh .env values, so the server never started. The unit tests never caught it because they don't run the seed script. Fixed in T07.
-- Hand-testing after T06: seed_demo.py refused to run on fresh .env values, so the server never started. The unit tests never caught it because they don't run the seed script. Fixed in T07.
+- Hand-testing after T06: seed_demo.py refused to run on fresh .env values, so the server never started. The unit tests never caught it because they don't run the seed script. Fixed in bug issue #9 (bbf1f5e).
