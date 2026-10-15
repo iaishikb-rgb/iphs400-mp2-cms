@@ -25,3 +25,11 @@
 ## T03 (issue #4)
 - Review caught that title/body and slug saved in two separate transactions, so a failed slug write could leave a half-saved Post. Fixed to one transaction.
 - I accepted that renaming a Live Post's slug breaks old links: that's in the spec. Presidents rarely rename, and we'd re-send the link in the club email anyway.
+
+## T05 (issue #6)
+- Drift: Claude added Pages to the dashboard counts without the ticket asking, justifying it from CONTEXT.md. I kept it because the presidents do want to see unpublished pages.
+- Review caught a bad nav order ("abc" or a negative number) silently becoming 0. Now rejected with an error.
+
+## T05 (issue #6)
+- Drift: Claude added Pages to the dashboard counts without the ticket asking, justifying it from CONTEXT.md. I kept it because the presidents do want to see unpublished pages.
+- Review caught a bad nav order ("abc" or a negative number) silently becoming 0. Now rejected with an error.
