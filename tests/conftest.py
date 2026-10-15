@@ -22,23 +22,59 @@ DEMO_USERS = {
 }
 
 
-@pytest.fixture
-def client() -> TestClient:
-    return TestClient(create_app())
+class FakeClock:
+    """Injected clock so idle sign-out is tested without waiting."""
+
+    def __init__(self, now: float = 1_000_000.0):
+        self.now = now
+
+    def __call__(self) -> float:
+        return self.now
+
+    def advance(self, seconds: float) -> None:
+        self.now += seconds
 
 
 @pytest.fixture
-def client_as():
+def clock() -> FakeClock:
+    return FakeClock()
+
+
+@pytest.fixture
+def make_app(tmp_path, clock):
+    """Factory for a fresh app on its own seeded database and the fake clock."""
+    from app.seed import seed_users
+
+    def _make():
+        db = tmp_path / "test.db"
+        application = create_app(database=db, clock=clock)
+        seed_users(db, {role: (u["email"], u["password"])
+                        for role, u in DEMO_USERS.items()})
+        return application
+
+    return _make
+
+
+@pytest.fixture
+def client(make_app) -> TestClient:
+    return TestClient(make_app())
+
+
+@pytest.fixture
+def client_as(make_app):
     """Return a factory: client_as("editor") -> a logged-in TestClient."""
+
+    def _csrf(c: TestClient) -> str:
+        page = c.get("/login")
+        return page.text.split('name="csrf_token" value="')[1].split('"')[0]
 
     def _login(role: str) -> TestClient:
         user = DEMO_USERS[role]
-        c = TestClient(create_app())
+        c = TestClient(make_app())
         response = c.post("/login", data={"email": user["email"],
-                                          "password": user["password"]},
+                                          "password": user["password"],
+                                          "csrf_token": _csrf(c)},
                           follow_redirects=False)
-        if response.status_code == 404:
-            pytest.skip("No /login route yet — build the login ticket first.")
         assert response.status_code in (200, 302, 303), (
             f"Login as {role} failed with {response.status_code}")
         return c
