@@ -13,3 +13,11 @@
 
 ## Model use
 - Planned opusplan for the grill but used Sonnet to save my 5h limit.
+
+## T02 (issue #3)
+- Review caught an information leak: an Officer got 404 for a missing Post but 403 for someone else's, so they could tell which Post IDs existed. Fixed: both are 403 for Officers.
+- Two rules couldn't be tested yet (Officer edit reverts Published to Draft; only a President deletes a Published Post), so they were carried into T03.
+
+## T02 (issue #3)
+- Review caught an information leak: an Officer got 404 for a missing Post but 403 for someone else's, so they could tell which Post IDs existed. Fixed: both are 403 for Officers.
+- Two rules couldn't be tested yet (Officer edit reverts Published to Draft; only a President deletes a Published Post), so they were carried into T03.
