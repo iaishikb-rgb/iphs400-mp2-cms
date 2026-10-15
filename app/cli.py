@@ -26,6 +26,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "serve":
+        try:
+            settings.require_safe_secret_key()
+        except RuntimeError as problem:
+            print(problem)
+            return 1
         import uvicorn
 
         uvicorn.run("app.main:app", port=args.port, reload=args.reload)

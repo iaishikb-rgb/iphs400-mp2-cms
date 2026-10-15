@@ -23,6 +23,7 @@ from app.templating import templates
 
 def create_app(database: Path | None = None,
                clock: Callable[[], float] | None = None) -> FastAPI:
+    settings.require_safe_secret_key()
     database = Path(database or settings.DATABASE_PATH)
 
     @asynccontextmanager
