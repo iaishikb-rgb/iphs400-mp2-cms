@@ -1,0 +1,6 @@
+{% extends "public/layout.html" %}
+{% block content %}
+  <p><small>{{ label }}</small></p>
+  <h1>{{ title }}</h1>
+  <ul>{% for p in posts %}<li><a href="{{ p.href }}">{{ p.title }}</a> <small>{{ p.date }}</small></li>{% endfor %}</ul>
+{% endblock %}

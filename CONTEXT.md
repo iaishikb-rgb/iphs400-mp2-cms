@@ -26,7 +26,13 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 
 ## Content
 
-**Post**: The one kind of dated club material: a meeting announcement, a pitch writeup, or an alumni call recap. There is a single kind of Post and no categories.
+**Post**: The one kind of dated club material: a meeting announcement, a pitch writeup, or an alumni call recap. There is a single kind of Post; it can carry one Category and any number of Tags.
+
+**Category**: One optional label on a Post, a single free-text field, e.g. "Pitches" or "Recaps". Names that differ only in case or punctuation are the same Category (the newest Post's spelling names the page), and a name is cut at 60 characters. A name with no ASCII letters or digits stays on the Post but gets no page. Pages have no Category. Added by MP2plus F2, so the earlier "no categories" decision no longer holds.
+
+**Tag**: A free-text label on a Post; a Post's Tags are one comma-separated field, with blanks and repeats dropped. Same matching rule as a Category.
+
+**Category page / Tag page**: The public list of Published Posts with one Category or Tag, at `category/<slug>.html` or `tag/<slug>.html`, written by the Publish run (title and date, newest first). A Category or Tag used only by Drafts has no page, so nothing about a Draft reaches the public site. Each Published Post links to its own Category page and Tag pages.
 
 **Pitch writeup**: A Post presenting a stock pitch. Spring pitches are group work by sector teams, so the team members are listed in the body text. It stays a Draft until a President has reviewed it.
 
@@ -56,7 +62,7 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 
 **Slug**: The short address-name of a Post or Page (e.g. `spring-stock-pitch`). Made from the title once, when first saved, and unchanged when the title is edited. Only an Admin can edit it; an old slug is not redirected.
 
-**Public paths**: Pages are published at `<slug>.html` and Posts at `posts/<slug>.html`, so a Post slug and a Page slug can never collide. The slug `index` is reserved.
+**Public paths**: Pages are published at `<slug>.html` and Posts at `posts/<slug>.html`, so a Post slug and a Page slug can never collide. The slug `index` is reserved. Category pages are `category/<slug>.html` and Tag pages `tag/<slug>.html`.
 
 **Unpublish**: An Admin returns a Published Post or Page to Draft. It leaves the public site at the next Publish run but is kept.
 
@@ -74,7 +80,7 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 
 **Dashboard**: The console's first screen. Shows counts of Drafts, Published items and Pending changes (Admins also see active and Deactivated Users), and a one-click "New Post" button.
 
-**Content list**: The console's list of Posts and Pages, newest first, filterable by status (with counts) and type. Editors see Posts only.
+**Content list**: The console's list of Posts and Pages, newest first, filterable by status (with counts), type and Category (a Category filter shows Posts only). Editors see Posts only.
 
 **Preview**: The editor's side-by-side view of how the sanitized Markdown will look on the public site, labelled "Draft, not Live" when it is not.
 
@@ -82,4 +88,4 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 
 ## Out of scope
 
-Comments, image uploads, categories, scheduled posts, email newsletters, member logins.
+Comments, image uploads, scheduled posts, email newsletters, member logins.

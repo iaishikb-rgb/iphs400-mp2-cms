@@ -4,7 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 
-from app import auth, db, pages, posts
+from app import auth, db, pages, posts, taxonomy
 from app.markdown import render_markdown
 from app.templating import flash, templates
 
@@ -26,11 +26,14 @@ def _own_post(conn, post_id: int, user) -> posts.Post:
     return post
 
 
-def _editor_page(request, user, post, title, body, error=None, status_code=200):
+def _editor_page(request, user, post, title, body, error=None, status_code=200,
+                 category=None, tags=None):
     return templates.TemplateResponse(
         request, "admin/post_edit.html",
         {"title": "Edit Post" if post else "New Post", "user": user, "post": post,
          "form_title": title, "form_body": body, "preview_html": render_markdown(body),
+         "form_category": category if category is not None else (post.category if post else ""),
+         "form_tags": tags if tags is not None else (post.tags if post else ""),
          "error": error},
         status_code=status_code,
     )
@@ -42,23 +45,29 @@ TYPE_FILTERS = ("all", "post", "page")
 
 @router.get("")
 def post_list(request: Request, status: str = "all", kind: str = Query("all", alias="type"),
-              user=Depends(auth.require_user), conn=Depends(db.get_db)):
-    """Content list. Unknown filter values fall back to All."""
+              category: str = "", user=Depends(auth.require_user), conn=Depends(db.get_db)):
+    """Content list. Unknown filter values fall back to All; a category (by slug) that
+    matches nothing shows nothing."""
     status = status if status in STATUS_FILTERS else "all"
     kind = kind if kind in TYPE_FILTERS else "all"
+    # A filter with no letters or digits matches nothing ("-" is never a slug), not everything.
+    category = taxonomy.term_slug(category) or ("-" if category.strip() else "")
     is_admin = user.role == "admin"
     own_only = None if is_admin else user.id
     # Pages are President-only: Officers get Posts regardless of the type filter.
     shows_posts = kind != "page" or not is_admin
-    shows_pages = is_admin and kind != "post"
+    # Pages have no category, so a category filter leaves them out.
+    shows_pages = is_admin and kind != "post" and not category
     counts = {posts.DRAFT: 0, posts.PUBLISHED: 0}
     items = []
     if shows_posts:
-        for k, n in posts.count_by_status(conn, own_only).items():
-            counts[k] += n
+        in_category = posts.list_posts(conn, own_only, category=category or None)
+        for p in in_category:
+            counts[p.status] += 1  # counts follow the category filter, like the list
         items += [{"kind": "Post", "title": p.title, "status": p.status, "by": p.author_email,
-                   "url": f"/admin/posts/{p.id}", "sort": (p.created_at, p.id)}
-                  for p in posts.list_posts(conn, own_only, STATUS_FILTERS[status])]
+                   "category": p.category, "url": f"/admin/posts/{p.id}",
+                   "sort": (p.created_at, p.id)}
+                  for p in in_category if STATUS_FILTERS[status] in (None, p.status)]
     if shows_pages:
         for k, n in pages.count_by_status(conn).items():
             counts[k] += n
@@ -72,6 +81,7 @@ def post_list(request: Request, status: str = "all", kind: str = Query("all", al
     return templates.TemplateResponse(
         request, "admin/post_list.html",
         {"title": "Content list", "user": user, "items": items, "status": status, "type": kind,
+         "category": category, "category_links": posts.categories(conn, own_only),
          "status_links": status_links, "type_links": TYPE_FILTERS if is_admin else ()},
     )
 
@@ -83,21 +93,24 @@ def post_new(request: Request, user=Depends(auth.require_user)):
 
 @router.post("")
 def post_create(request: Request, title: str = Form(""), body: str = Form(""),
+                category: str = Form(""), tags: str = Form(""),
                 user=Depends(auth.require_user), conn=Depends(db.get_db)):
     title = title.strip()
     if not title:
-        return _editor_page(request, user, None, title, body, "A Post needs a title", 400)
-    post_id = posts.create_post(conn, title, body, user.id, auth.now(request))
+        return _editor_page(request, user, None, title, body, "A Post needs a title", 400,
+                            category, tags)
+    post_id = posts.create_post(conn, title, body, user.id, auth.now(request), category, tags)
     flash(request, "Saved.")
     return RedirectResponse(f"/admin/posts/{post_id}", status_code=303)
 
 
 @router.post("/preview")
 def post_preview(request: Request, title: str = Form(""), body: str = Form(""),
+                 category: str = Form(""), tags: str = Form(""),
                  post_id: int | None = Form(None),
                  user=Depends(auth.require_user), conn=Depends(db.get_db)):
     post = _own_post(conn, post_id, user) if post_id else None
-    return _editor_page(request, user, post, title, body)
+    return _editor_page(request, user, post, title, body, category=category, tags=tags)
 
 
 @router.get("/{post_id}")
@@ -109,20 +122,24 @@ def post_edit(post_id: int, request: Request, user=Depends(auth.require_user),
 
 @router.post("/{post_id}")
 def post_update(post_id: int, request: Request, title: str = Form(""), body: str = Form(""),
+                category: str = Form(""), tags: str = Form(""),
                 slug: str | None = Form(None), user=Depends(auth.require_user), conn=Depends(db.get_db)):
     post = _own_post(conn, post_id, user)
     title = title.strip()
     if not title:
-        return _editor_page(request, user, post, title, body, "A Post needs a title", 400)
+        return _editor_page(request, user, post, title, body, "A Post needs a title", 400,
+                            category=category, tags=tags)
     new_slug = None
     if user.role == "admin" and slug is not None and slug.strip():
         new_slug = posts.slugify(slug)
         if posts.slug_taken(conn, new_slug, post_id):
             return _editor_page(request, user, post, title, body,
-                                f"The slug “{new_slug}” is already used by another Post", 400)
+                                f"The slug “{new_slug}” is already used by another Post", 400,
+                                category, tags)
     # An Editor's edit sends a Published Post back to Draft; an Admin's leaves it alone.
     status = post.status if user.role == "admin" else posts.DRAFT
-    posts.update_post(conn, post_id, title, body, auth.now(request), status, new_slug)
+    posts.update_post(conn, post_id, title, body, auth.now(request), status, new_slug,
+                      category, tags)
     flash(request, "Saved.")
     return RedirectResponse(f"/admin/posts/{post_id}", status_code=303)
 

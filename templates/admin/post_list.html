@@ -4,20 +4,29 @@
   <p><a href="{{ url('/admin/posts/new') }}">New Post</a> ·{% if user.role == 'admin' %} <a href="{{ url('/admin/pages/new') }}">New Page</a> ·{% endif %} <a href="{{ url('/admin') }}">Dashboard</a></p>
   <nav aria-label="Status">
     {% for key, label, n in status_links %}
-    <a href="{{ url('/admin/posts?status=' ~ (key) ~ '&type=' ~ (type)) }}">{{ label }} ({{ n }})</a>{% if not loop.last %} · {% endif %}
+    <a href="{{ url('/admin/posts?status=' ~ (key) ~ '&type=' ~ (type) ~ '&category=' ~ (category)) }}">{{ label }} ({{ n }})</a>{% if not loop.last %} · {% endif %}
     {% endfor %}
   </nav>
   <nav aria-label="Type">
     {% for key in type_links %}
-    <a href="{{ url('/admin/posts?status=' ~ (status) ~ '&type=' ~ (key)) }}">{{ key | capitalize }}</a>{% if not loop.last %} · {% endif %}
+    <a href="{{ url('/admin/posts?status=' ~ (status) ~ '&type=' ~ (key) ~ '&category=' ~ (category)) }}">{{ key | capitalize }}</a>{% if not loop.last %} · {% endif %}
     {% endfor %}
   </nav>
+  {% if category_links %}
+  <nav aria-label="Category">
+    Category:
+    <a href="{{ url('/admin/posts?status=' ~ (status) ~ '&type=' ~ (type)) }}">Any</a>
+    {% for slug, name in category_links %}
+    · <a href="{{ url('/admin/posts?status=' ~ (status) ~ '&type=' ~ (type) ~ '&category=' ~ (slug)) }}">{{ name }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
   {% if items %}
   <ul>
     {% for item in items %}
     <li>
       <a href="{{ item.url }}">{{ item.title }}</a>
-      — {{ item.kind }}, {{ item.status | capitalize }}{% if item.by %}, by {{ item.by }}{% endif %}
+      — {{ item.kind }}, {{ item.status | capitalize }}{% if item.category %}, {{ item.category }}{% endif %}{% if item.by %}, by {{ item.by }}{% endif %}
     </li>
     {% endfor %}
   </ul>

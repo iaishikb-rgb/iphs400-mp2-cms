@@ -52,3 +52,13 @@ def test_reseeding_resets_demo_display_names(tmp_path):
     names = {r["role"]: r["display_name"] for r in
              db.connect(database).execute("SELECT role, display_name FROM users")}
     assert names == {"admin": "Aishik Biswas", "editor": "Club Officer"}
+
+
+def test_demo_categories_are_published_and_a_draft_only_category_is_not(tmp_path):
+    out = render_site(tmp_path / "site", seeded(tmp_path))
+    recaps = (out / "category" / "recaps.html").read_text()
+    assert "Recap: Spring 2026 stock pitch competition" in recaps
+    assert (out / "tag" / "william-blair.html").exists()
+    assert (out / "tag" / "stock-pitch.html").exists()  # a published Post shares this tag
+    assert not (out / "category" / "pitches.html").exists()  # only the Draft uses it
+    assert not (out / "tag" / "spring-2026.html").exists()
