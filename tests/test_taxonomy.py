@@ -1,4 +1,8 @@
-"""MP2plus F2: categories and tags. Seam 1 (HTTP app) and seam 2 (render_site)."""
+"""MP2plus F2 (issue #11): categories and tags. Seam 1 (HTTP app) and seam 2 (render_site).
+
+Test names start test_stepN_ for the ticket's acceptance step N; the rest cover migration
+and the Pending-changes and Editor rules the steps rely on.
+"""
 import re
 
 from app.publish import has_pending_changes, publish, render_site
@@ -27,7 +31,7 @@ def render(client, tmp_path):
 
 
 # Step 1: one category and comma-separated tags persist after save.
-def test_category_and_tags_persist_after_save(client_as):
+def test_step1_category_and_tags_persist_after_save(client_as):
     c = client_as("editor")
     url = post_url(write_post(c, category="Pitches", tags="NVDA, tech ,spring"))
     page = c.get(url).text
@@ -35,7 +39,7 @@ def test_category_and_tags_persist_after_save(client_as):
     assert re.search(r'name="tags"[^>]*value="NVDA, tech, spring"', page)
 
 
-def test_category_and_tags_can_be_edited_and_cleared(client_as):
+def test_step1_category_and_tags_can_be_edited_and_cleared(client_as):
     c = client_as("editor")
     url = post_url(write_post(c, category="Pitches", tags="a"))
     write_post(c, category="", tags="", url=url)
@@ -44,14 +48,14 @@ def test_category_and_tags_can_be_edited_and_cleared(client_as):
     assert re.search(r'name="tags"[^>]*value=""', page)
 
 
-def test_duplicate_blank_and_repeated_tags_are_tidied(client_as):
+def test_step1_duplicate_blank_and_repeated_tags_are_tidied(client_as):
     c = client_as("editor")
     url = post_url(write_post(c, tags="NVDA, nvda,, ,tech,NVDA"))
     assert re.search(r'name="tags"[^>]*value="NVDA, tech"', c.get(url).text)
 
 
 # Step 2: the admin content list filters by category.
-def test_content_list_filters_by_category(client_as):
+def test_step2_content_list_filters_by_category(client_as):
     c = client_as("editor")
     write_post(c, title="Pitch One", category="Pitches")
     write_post(c, title="Recap One", category="Recaps")
@@ -63,7 +67,7 @@ def test_content_list_filters_by_category(client_as):
     assert "Recap One" not in filtered and "Uncategorised One" not in filtered
 
 
-def test_category_filter_excludes_pages_for_a_president(client_as):
+def test_step2_category_filter_excludes_pages_for_a_president(client_as):
     editor = client_as("editor")
     admin = president_for(editor)
     write_post(editor, title="Pitch One", category="Pitches")
@@ -74,7 +78,7 @@ def test_category_filter_excludes_pages_for_a_president(client_as):
     assert "Pitch One" in filtered and "About Page" not in filtered
 
 
-def test_editor_filter_still_shows_only_their_own_posts(client_as):
+def test_step2_editor_filter_still_shows_only_their_own_posts(client_as):
     editor = client_as("editor")
     admin = president_for(editor)
     write_post(admin, title="President Pitch", category="Pitches")
@@ -84,7 +88,7 @@ def test_editor_filter_still_shows_only_their_own_posts(client_as):
 
 
 # Step 3: publish writes category/<slug>.html and tag/<slug>.html.
-def test_publish_writes_category_and_tag_pages(client_as, tmp_path):
+def test_step3_publish_writes_category_and_tag_pages(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Pitch: NVDA", category="Pitches", tags="tech, NVDA")
@@ -101,7 +105,7 @@ def test_publish_writes_category_and_tag_pages(client_as, tmp_path):
     assert (out / "tag" / "energy.html").exists() and (out / "tag" / "nvda.html").exists()
 
 
-def test_category_page_shows_the_name_title_and_date(client_as, tmp_path):
+def test_step3_category_page_shows_the_name_title_and_date(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Pitch: NVDA", category="Stock Pitches")
@@ -110,7 +114,7 @@ def test_category_page_shows_the_name_title_and_date(client_as, tmp_path):
     assert re.search(r"\d{4}-\d{2}-\d{2}", html)
 
 
-def test_names_that_slugify_alike_share_one_page(client_as, tmp_path):
+def test_step3_names_that_slugify_alike_share_one_page(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="One", category="Pitches")
@@ -122,7 +126,7 @@ def test_names_that_slugify_alike_share_one_page(client_as, tmp_path):
     assert 'href="../posts/two.html">Two</a>' in html
 
 
-def test_names_with_no_letters_or_digits_write_no_page(client_as, tmp_path):
+def test_step3_names_with_no_letters_or_digits_write_no_page(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Odd", category="!!!", tags="???")
@@ -131,7 +135,7 @@ def test_names_with_no_letters_or_digits_write_no_page(client_as, tmp_path):
     assert not (out / "tag").exists() or not list((out / "tag").iterdir())
 
 
-def test_markup_in_names_is_escaped(client_as, tmp_path):
+def test_step3_markup_in_names_is_escaped(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Sneaky", category="<script>alert(1)</script>",
@@ -145,7 +149,7 @@ def test_markup_in_names_is_escaped(client_as, tmp_path):
 
 
 # Step 4: each published post links to its category and tag pages, relatively.
-def test_post_links_to_its_category_and_tag_pages_relatively(client_as, tmp_path):
+def test_step4_post_links_to_its_category_and_tag_pages_relatively(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Pitch: NVDA", category="Pitches", tags="tech, NVDA")
@@ -156,7 +160,7 @@ def test_post_links_to_its_category_and_tag_pages_relatively(client_as, tmp_path
         assert (out / "posts" / ".." / target).exists()
 
 
-def test_index_pages_link_back_with_relative_paths(client_as, tmp_path):
+def test_step4_index_pages_link_back_with_relative_paths(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Pitch: NVDA", category="Pitches", tags="tech")
@@ -168,7 +172,7 @@ def test_index_pages_link_back_with_relative_paths(client_as, tmp_path):
         assert 'href="../index.html"' in html
 
 
-def test_no_root_absolute_paths_anywhere(client_as, tmp_path):
+def test_step4_no_root_absolute_paths_anywhere(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Pitch: NVDA", category="Pitches", tags="tech")
@@ -177,7 +181,7 @@ def test_no_root_absolute_paths_anywhere(client_as, tmp_path):
         assert not re.search(r'(?:href|src)="/', path.read_text()), path
 
 
-def test_post_without_category_or_tags_has_no_taxonomy_links(client_as, tmp_path):
+def test_step4_post_without_category_or_tags_has_no_taxonomy_links(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Plain")
@@ -187,7 +191,7 @@ def test_post_without_category_or_tags_has_no_taxonomy_links(client_as, tmp_path
 
 
 # Step 5: drafts never reach either index page.
-def test_draft_with_same_category_and_tag_is_absent(client_as, tmp_path):
+def test_step5_draft_with_same_category_and_tag_is_absent(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Live Pitch", category="Pitches", tags="tech")
@@ -200,7 +204,7 @@ def test_draft_with_same_category_and_tag_is_absent(client_as, tmp_path):
     assert "Secret Draft" not in everything
 
 
-def test_a_category_used_only_by_drafts_has_no_page(client_as, tmp_path):
+def test_step5_a_category_used_only_by_drafts_has_no_page(client_as, tmp_path):
     editor = client_as("editor")
     write_post(editor, title="Secret Draft", category="Hidden", tags="covert")
     out = render(editor, tmp_path)
@@ -209,7 +213,7 @@ def test_a_category_used_only_by_drafts_has_no_page(client_as, tmp_path):
     assert "Hidden" not in "".join(p.read_text() for p in out.rglob("*.html"))
 
 
-def test_unpublished_post_leaves_the_index_pages(client_as, tmp_path):
+def test_step5_unpublished_post_leaves_the_index_pages(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     url = live(editor, admin, title="Soon Gone", category="Pitches", tags="tech")
@@ -270,7 +274,7 @@ def test_an_older_database_without_the_columns_is_upgraded(tmp_path):
     conn.close()
 
 
-def test_a_published_post_and_a_draft_share_a_term_and_only_the_published_one_is_listed(
+def test_step5_a_published_post_and_a_draft_share_a_term_and_only_the_published_one_is_listed(
         client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
@@ -283,7 +287,7 @@ def test_a_published_post_and_a_draft_share_a_term_and_only_the_published_one_is
         assert "Draft Two" not in html and "draft-two" not in html
 
 
-def test_a_very_long_name_is_cut_so_publishing_still_works(client_as, tmp_path):
+def test_step3_a_very_long_name_is_cut_so_publishing_still_works(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
     live(editor, admin, title="Long", category="c" * 400, tags="t" * 400 + ", short")
@@ -293,7 +297,7 @@ def test_a_very_long_name_is_cut_so_publishing_still_works(client_as, tmp_path):
     assert (out / "tag" / "short.html").exists()
 
 
-def test_a_filter_with_no_letters_or_digits_matches_nothing(client_as):
+def test_step2_a_filter_with_no_letters_or_digits_matches_nothing(client_as):
     c = client_as("editor")
     write_post(c, title="Pitch One", category="Pitches")
     page = c.get("/admin/posts?category=%21%21%21").text
