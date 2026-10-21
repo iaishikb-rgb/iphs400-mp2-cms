@@ -2,5 +2,11 @@
 {% block content %}
   <h1>{{ title }}</h1>
   <p><em>By {{ byline_name }}, {{ date }}</em></p>
+  {% if category or tags %}
+  <p><small>
+    {% if category %}Category: <a href="{{ category.href }}">{{ category.name }}</a>{% endif %}
+    {% if tags %}Tags: {% for t in tags %}<a href="{{ t.href }}">{{ t.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}
+  </small></p>
+  {% endif %}
   {{ body_html | safe }}
 {% endblock %}

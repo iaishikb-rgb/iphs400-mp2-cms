@@ -5,6 +5,8 @@ import re
 import sqlite3
 from dataclasses import dataclass
 
+from app import taxonomy
+
 DRAFT = "draft"
 PUBLISHED = "published"
 
@@ -21,6 +23,8 @@ class Post:
     author_name: str
     created_at: float
     updated_at: float
+    category: str = ""
+    tags: str = ""
 
 
 _SELECT = """
@@ -31,7 +35,8 @@ FROM posts p JOIN users u ON u.id = p.author_id
 
 def _row_to_post(row: sqlite3.Row) -> Post:
     return Post(row["id"], row["title"], row["slug"], row["body"], row["status"],
-                row["author_id"], row["author_email"], row["author_name"], row["created_at"], row["updated_at"])
+                row["author_id"], row["author_email"], row["author_name"], row["created_at"], row["updated_at"],
+                row["category"], row["tags"])
 
 
 # "index" would collide with the generated index.html / posts/index.html.
@@ -53,13 +58,14 @@ def _unique_slug(conn: sqlite3.Connection, title: str) -> str:
 
 
 def create_post(conn: sqlite3.Connection, title: str, body: str, author_id: int,
-                now: float) -> int:
+                now: float, category: str = "", tags: str = "") -> int:
     """New Posts are always Drafts."""
     with conn:
         cur = conn.execute(
-            "INSERT INTO posts (title, slug, body, status, author_id, created_at, updated_at)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (title, _unique_slug(conn, title), body, DRAFT, author_id, now, now),
+            "INSERT INTO posts (title, slug, body, status, author_id, category, tags,"
+            " created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (title, _unique_slug(conn, title), body, DRAFT, author_id,
+             taxonomy.clean_category(category), taxonomy.clean_tags(tags), now, now),
         )
     return cur.lastrowid
 
@@ -70,8 +76,9 @@ def get_post(conn: sqlite3.Connection, post_id: int) -> Post | None:
 
 
 def list_posts(conn: sqlite3.Connection, author_id: int | None = None,
-               status: str | None = None) -> list[Post]:
-    """Newest first. author_id limits the list to one User's Posts, status to one status."""
+               status: str | None = None, category: str | None = None) -> list[Post]:
+    """Newest first. author_id limits the list to one User's Posts, status to one status,
+    category (a category slug) to one category."""
     clauses, args = [], []
     if author_id is not None:
         clauses.append("p.author_id = ?")
@@ -82,7 +89,20 @@ def list_posts(conn: sqlite3.Connection, author_id: int | None = None,
     where = " WHERE " + " AND ".join(clauses) if clauses else ""
     rows = conn.execute(_SELECT + where + " ORDER BY p.created_at DESC, p.id DESC",
                         args).fetchall()
-    return [_row_to_post(r) for r in rows]
+    found = [_row_to_post(r) for r in rows]
+    if category is not None:
+        found = [p for p in found if taxonomy.term_slug(p.category) == category]
+    return found
+
+
+def categories(conn: sqlite3.Connection, author_id: int | None = None) -> list[tuple[str, str]]:
+    """(slug, name) of every category in use, A to Z; the first spelling seen names it."""
+    named = {}
+    for post in list_posts(conn, author_id):
+        slug = taxonomy.term_slug(post.category)
+        if slug:
+            named.setdefault(slug, post.category)
+    return sorted(named.items(), key=lambda item: item[1].lower())
 
 
 def count_by_status(conn: sqlite3.Connection, author_id: int | None = None) -> dict[str, int]:
@@ -95,13 +115,15 @@ def count_by_status(conn: sqlite3.Connection, author_id: int | None = None) -> d
 
 
 def update_post(conn: sqlite3.Connection, post_id: int, title: str, body: str,
-                now: float, status: str, slug: str | None = None) -> None:
+                now: float, status: str, slug: str | None = None,
+                category: str = "", tags: str = "") -> None:
     """The slug changes only when a normalised `slug` is passed (Admin-only callers)."""
     with conn:
         conn.execute(
             "UPDATE posts SET title = ?, body = ?, status = ?, updated_at = ?,"
-            " slug = COALESCE(?, slug) WHERE id = ?",
-            (title, body, status, now, slug, post_id),
+            " slug = COALESCE(?, slug), category = ?, tags = ? WHERE id = ?",
+            (title, body, status, now, slug, taxonomy.clean_category(category),
+             taxonomy.clean_tags(tags), post_id),
         )
 
 

@@ -7,7 +7,8 @@ Rules the rubric checks:
      root-absolute ("/style.css"), because Pages serves this from a subfolder.
 
 Layout: Pages are <slug>.html at the top, Posts are posts/<slug>.html, so a Post
-slug can never collide with a Page slug. "index" is a reserved slug.
+slug can never collide with a Page slug. "index" is a reserved slug. Each category
+and tag in use by a Published Post also gets category/<slug>.html or tag/<slug>.html.
 """
 from __future__ import annotations
 
@@ -20,7 +21,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from app import db, pages, posts, settings
+from app import db, pages, posts, settings, taxonomy
 from app.markdown import render_markdown
 
 HOMEPAGE_SLUG = "homepage"  # the seeded Homepage; its slug is made once and survives renames
@@ -62,10 +63,30 @@ def _fingerprint(conn: sqlite3.Connection) -> str:
     live_pages, live_posts = _published(conn)
     content = {
         "pages": [[p.slug, p.title, p.body, p.nav_order] for p in live_pages],
-        "posts": [[p.slug, p.title, p.body, _byline_name(p), _date(p.created_at)]
-                  for p in live_posts],
+        "posts": [[p.slug, p.title, p.body, _byline_name(p), _date(p.created_at),
+                   p.category, p.tags] for p in live_posts],
     }
     return hashlib.sha256(json.dumps(content, sort_keys=True).encode()).hexdigest()
+
+
+def _categories_of(post: posts.Post) -> list[tuple[str, str]]:
+    """[(slug, name)] of the Post's category; empty when it has none worth a page."""
+    slug = taxonomy.term_slug(post.category)
+    return [(slug, post.category)] if slug else []
+
+
+def _tags_of(post: posts.Post) -> list[tuple[str, str]]:
+    tags = ((taxonomy.term_slug(name), name) for name in taxonomy.parse_tags(post.tags))
+    return [(slug, name) for slug, name in tags if slug]
+
+
+def _group(live_posts: list[posts.Post], terms_of) -> dict[str, dict]:
+    """slug -> {"name", "posts"} over the Published Posts, newest first, first spelling wins."""
+    groups: dict[str, dict] = {}
+    for post in live_posts:
+        for slug, name in terms_of(post):
+            groups.setdefault(slug, {"name": name, "posts": []})["posts"].append(post)
+    return groups
 
 
 def has_pending_changes(conn: sqlite3.Connection) -> bool:
@@ -92,6 +113,8 @@ def render_site(out: Path | None = None, database: Path | None = None) -> Path:
         shutil.rmtree(out)
     (out / "posts").mkdir(parents=True)
     env = environment()
+    category_groups = _group(live_posts, _categories_of)
+    tag_groups = _group(live_posts, _tags_of)
     (out / "style.css").write_text(CSS)
 
     def render(template: str, root: str, **context) -> str:
@@ -120,7 +143,19 @@ def render_site(out: Path | None = None, database: Path | None = None) -> Path:
     for post in live_posts:
         (out / "posts" / f"{post.slug}.html").write_text(render(
             "public/post.html", "../", title=post.title, body_html=render_markdown(post.body),
-            byline_name=_byline_name(post), date=_date(post.created_at)))
+            byline_name=_byline_name(post), date=_date(post.created_at),
+            category=next(({"name": name, "href": f"../category/{slug}.html"}
+                           for slug, name in _categories_of(post)), None),
+            tags=[{"name": name, "href": f"../tag/{slug}.html"} for slug, name in _tags_of(post)]))
+    for folder, label, groups in (("category", "Category", category_groups),
+                                  ("tag", "Tag", tag_groups)):
+        if groups:
+            (out / folder).mkdir()
+        for slug, group in groups.items():
+            (out / folder / f"{slug}.html").write_text(render(
+                "public/term.html", "../", title=group["name"], label=label,
+                posts=[{"title": p.title, "href": f"../posts/{p.slug}.html",
+                        "date": _date(p.created_at)} for p in group["posts"]]))
     return out
 
 

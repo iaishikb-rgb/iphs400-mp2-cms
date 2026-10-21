@@ -19,6 +19,10 @@
       {% endif %}
       <p>Status: {{ post.status | capitalize }}</p>
       {% endif %}
+      <p><label>Category<br>
+        <input type="text" name="category" value="{{ form_category }}" style="width: 100%;"></label></p>
+      <p><label>Tags (separate with commas)<br>
+        <input type="text" name="tags" value="{{ form_tags }}" style="width: 100%;"></label></p>
       <p><label>Body (Markdown)<br>
         <textarea name="body" rows="14" style="width: 100%;">{{ form_body }}</textarea></label></p>
       <p>

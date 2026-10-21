@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS posts (
     body       TEXT NOT NULL DEFAULT '',
     status     TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
     author_id  INTEGER NOT NULL REFERENCES users (id),
+    category   TEXT NOT NULL DEFAULT '',
+    tags       TEXT NOT NULL DEFAULT '',
     created_at REAL NOT NULL,
     updated_at REAL NOT NULL
 );
@@ -59,6 +61,10 @@ def init_db(path: Path) -> None:
         columns = {r["name"] for r in conn.execute("PRAGMA table_info(users)")}
         if "display_name" not in columns:  # database made before T07
             conn.execute("ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
+        post_columns = {r["name"] for r in conn.execute("PRAGMA table_info(posts)")}
+        for column in ("category", "tags"):  # database made before MP2plus F2
+            if column not in post_columns:
+                conn.execute(f"ALTER TABLE posts ADD COLUMN {column} TEXT NOT NULL DEFAULT ''")
     conn.close()
 
 
