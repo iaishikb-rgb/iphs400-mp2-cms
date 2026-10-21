@@ -89,3 +89,12 @@ Project vocabulary for the Kenyon College Finance Club (KCFC) website. One word 
 ## Out of scope
 
 Comments, image uploads, scheduled posts, email newsletters, member logins.
+
+## Decisions
+
+| Question | Choice | Why |
+|---|---|---|
+| Who can publish? | Only Presidents; Officers write Drafts | Our spring sector teams pitch to Kenyon alumni at William Blair. A half-finished pitch going out under the club's name would be embarrassing, so one of the three of us signs off first. |
+| Who can edit Pages? | Presidents only | In WordPress, an Editor could trash the About page (my field note 6). Leadership and the Analyst Program page are the club's official face; an officer posting a meeting notice shouldn't be able to touch them. |
+| What happens when someone graduates? | Deactivate, never delete | Board turns over every May. Seniors' pitch writeups should keep their name as the author, but they must not be able to log in after they leave. |
+| Force a new password at first sign-in? | No | About eight officers, and a President sets each password face to face at a board meeting in Oden. An extra screen wasn't worth it the week MP2 was due. |
