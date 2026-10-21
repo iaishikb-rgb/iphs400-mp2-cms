@@ -5,10 +5,9 @@
 
 ## Context
 
-We paste links to Posts and Pages into club emails and send them to alumni, so a
-link must keep working after it is sent. The site is static and GitHub Pages
-serves it from a subfolder, so published links must be relative. A Post and a
-Page must never end up with the same file name.
+We share links to Posts and Pages in club emails and with alumni, so links must
+stay stable. GitHub Pages serves the static site from a subfolder, so links must
+be relative. A Post and a Page must never share a file name.
 
 ## Decision
 
@@ -22,11 +21,11 @@ Page must never end up with the same file name.
 
 - **One shared namespace for Posts and Pages:** a Post and a Page both called
   "about" would collide on one file name.
-- **Date-based URLs (`2026/10/slug.html`):** longer, and our Posts are
-  announcements more than a dated blog.
+- **Date-based URLs (`2026/10/slug.html`):** longer; our Posts are announcements,
+  not a dated blog.
 - **Regenerating the slug on every title edit:** breaks links already sent in emails.
 
 ## Consequences
 
-- Links in emails stay valid after a title is corrected.
+- Links in emails survive title edits.
 - A President who changes a slug by hand breaks the old link for good.
