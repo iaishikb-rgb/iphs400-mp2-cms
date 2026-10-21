@@ -81,7 +81,7 @@ def _tags_of(post: posts.Post) -> list[tuple[str, str]]:
 
 
 def _group(live_posts: list[posts.Post], terms_of) -> dict[str, dict]:
-    """slug -> {"name", "posts"} over the Published Posts, newest first, first spelling wins."""
+    """slug -> {"name", "posts"} over the Published Posts, newest first; the newest Post's spelling names it."""
     groups: dict[str, dict] = {}
     for post in live_posts:
         for slug, name in terms_of(post):

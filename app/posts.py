@@ -96,7 +96,7 @@ def list_posts(conn: sqlite3.Connection, author_id: int | None = None,
 
 
 def categories(conn: sqlite3.Connection, author_id: int | None = None) -> list[tuple[str, str]]:
-    """(slug, name) of every category in use, A to Z; the first spelling seen names it."""
+    """(slug, name) of every category in use, A to Z; the newest Post's spelling names it."""
     named = {}
     for post in list_posts(conn, author_id):
         slug = taxonomy.term_slug(post.category)

@@ -36,19 +36,19 @@ PAGES = {  # title -> (body, publish?)
         "will send you the resume review form.", True),
 }
 
-POSTS = [  # (title, body, author role, publish?)
+POSTS = [  # (title, body, author role, publish?, category, tags)
     ("Fall meeting: Wed Oct 28, Oden 110",
      "Our next meeting is **Wednesday, October 28 at 7 pm in Oden 110**. We meet every "
      f"other week, and new members are always welcome. Questions? Write to [{EMAIL}]"
-     f"(mailto:{EMAIL}).", "admin", True),
+     f"(mailto:{EMAIL}).", "admin", True, "Announcements", "meeting, Oden 110"),
     ("Recap: Spring 2026 stock pitch competition",
      "In the spring stock pitch competition, members worked in three sector teams, each "
      "led by one of the co-presidents. Each team presented its pitch to Kenyon alumni who "
      "work in equity research at William Blair, and got feedback from people in the "
-     "industry.", "admin", True),
+     "industry.", "admin", True, "Recaps", "stock pitch, William Blair"),
     ("Pitch: sector team writeup (draft)",
      "Draft. Team members and the full writeup go here once a President has reviewed it.",
-     "editor", False),
+     "editor", False, "Pitches", "stock pitch, spring 2026"),
 ]
 
 
@@ -69,9 +69,9 @@ def seed_demo_content(database: Path) -> list[str]:
         authors = {row["role"]: row["id"] for row in
                    conn.execute("SELECT id, role FROM users ORDER BY id DESC")}
         have = {p.title for p in posts.list_posts(conn)}
-        for title, body, role, live in POSTS:
+        for title, body, role, live, category, tags in POSTS:
             if title not in have and role in authors:
-                post_id = posts.create_post(conn, title, body, authors[role], now)
+                post_id = posts.create_post(conn, title, body, authors[role], now, category, tags)
                 if live:
                     posts.set_status(conn, post_id, posts.PUBLISHED, now)
                 done.append(f"post {title}")

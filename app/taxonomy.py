@@ -7,6 +7,9 @@ from __future__ import annotations
 
 import re
 
+# A name becomes a file name (category/<slug>.html), so it must stay well under 255 bytes.
+MAX_NAME = 60
+
 
 def term_slug(name: str) -> str:
     """The address-name of a category or tag; empty when it has no letters or digits."""
@@ -14,14 +17,14 @@ def term_slug(name: str) -> str:
 
 
 def clean_category(raw: str) -> str:
-    return " ".join(raw.split())
+    return " ".join(raw.split())[:MAX_NAME].strip()
 
 
 def parse_tags(raw: str) -> list[str]:
     """Comma-separated names, trimmed, without blanks or repeats (first spelling wins)."""
     seen, tags = set(), []
     for part in raw.split(","):
-        name = " ".join(part.split())
+        name = " ".join(part.split())[:MAX_NAME].strip()
         key = term_slug(name) or name.lower()
         if name and key not in seen:
             seen.add(key)

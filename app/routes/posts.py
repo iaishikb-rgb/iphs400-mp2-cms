@@ -50,7 +50,8 @@ def post_list(request: Request, status: str = "all", kind: str = Query("all", al
     matches nothing shows nothing."""
     status = status if status in STATUS_FILTERS else "all"
     kind = kind if kind in TYPE_FILTERS else "all"
-    category = taxonomy.term_slug(category)
+    # A filter with no letters or digits matches nothing ("-" is never a slug), not everything.
+    category = taxonomy.term_slug(category) or ("-" if category.strip() else "")
     is_admin = user.role == "admin"
     own_only = None if is_admin else user.id
     # Pages are President-only: Officers get Posts regardless of the type filter.

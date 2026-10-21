@@ -115,8 +115,11 @@ def test_names_that_slugify_alike_share_one_page(client_as, tmp_path):
     admin = president_for(editor)
     live(editor, admin, title="One", category="Pitches")
     live(editor, admin, title="Two", category="pitches")
-    html = (render(editor, tmp_path) / "category" / "pitches.html").read_text()
-    assert "One" in html and "Two" in html
+    out = render(editor, tmp_path)
+    assert sorted(p.name for p in (out / "category").iterdir()) == ["pitches.html"]
+    html = (out / "category" / "pitches.html").read_text()
+    assert 'href="../posts/one.html">One</a>' in html
+    assert 'href="../posts/two.html">Two</a>' in html
 
 
 def test_names_with_no_letters_or_digits_write_no_page(client_as, tmp_path):
@@ -136,6 +139,9 @@ def test_markup_in_names_is_escaped(client_as, tmp_path):
     out = render(editor, tmp_path)
     everything = "".join(p.read_text() for p in out.rglob("*.html"))
     assert "<script>" not in everything and "<img src=x" not in everything
+    post = (out / "posts" / "sneaky.html").read_text()
+    assert "&lt;script&gt;alert(1)&lt;/script&gt;" in post  # shown as text, not dropped
+    assert "&lt;img src=x onerror=alert(1)&gt;" in post
 
 
 # Step 4: each published post links to its category and tag pages, relatively.
@@ -206,10 +212,13 @@ def test_a_category_used_only_by_drafts_has_no_page(client_as, tmp_path):
 def test_unpublished_post_leaves_the_index_pages(client_as, tmp_path):
     editor = client_as("editor")
     admin = president_for(editor)
-    url = live(editor, admin, title="Soon Gone", category="Pitches")
+    url = live(editor, admin, title="Soon Gone", category="Pitches", tags="tech")
+    out = render(editor, tmp_path)
+    assert (out / "category" / "pitches.html").exists() and (out / "tag" / "tech.html").exists()
     act(admin, url, "unpublish")
     out = render(editor, tmp_path)
     assert not (out / "category" / "pitches.html").exists()
+    assert not (out / "tag" / "tech.html").exists()
 
 
 # Publish run bookkeeping: a taxonomy change is a pending change.
@@ -259,3 +268,33 @@ def test_an_older_database_without_the_columns_is_upgraded(tmp_path):
     row = conn.execute("SELECT category, tags FROM posts").fetchone()
     assert (row["category"], row["tags"]) == ("", "")
     conn.close()
+
+
+def test_a_published_post_and_a_draft_share_a_term_and_only_the_published_one_is_listed(
+        client_as, tmp_path):
+    editor = client_as("editor")
+    admin = president_for(editor)
+    live(editor, admin, title="Live One", category="Pitches", tags="tech")
+    write_post(editor, title="Draft Two", category="Pitches", tags="tech")
+    out = render(editor, tmp_path)
+    for name in ("category/pitches.html", "tag/tech.html"):
+        html = (out / name).read_text()
+        assert 'href="../posts/live-one.html">Live One</a>' in html
+        assert "Draft Two" not in html and "draft-two" not in html
+
+
+def test_a_very_long_name_is_cut_so_publishing_still_works(client_as, tmp_path):
+    editor = client_as("editor")
+    admin = president_for(editor)
+    live(editor, admin, title="Long", category="c" * 400, tags="t" * 400 + ", short")
+    out = render(editor, tmp_path)  # must not raise OSError (file name too long)
+    assert (out / "category" / ("c" * 60 + ".html")).exists()
+    assert (out / "tag" / ("t" * 60 + ".html")).exists()
+    assert (out / "tag" / "short.html").exists()
+
+
+def test_a_filter_with_no_letters_or_digits_matches_nothing(client_as):
+    c = client_as("editor")
+    write_post(c, title="Pitch One", category="Pitches")
+    page = c.get("/admin/posts?category=%21%21%21").text
+    assert "Pitch One" not in page
