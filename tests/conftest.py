@@ -90,3 +90,13 @@ def client_as(make_app):
         return c
 
     return _login
+
+
+@pytest.fixture(autouse=True)
+def reset_login_limiter():
+    """Failed-login counts are process-wide; start every test with a clean slate."""
+    from app import login_limiter
+
+    login_limiter.reset()
+    yield
+    login_limiter.reset()
